@@ -12,7 +12,7 @@ import java.util.List;
  * 门店商品控制器（消费者端）
  */
 @RestController
-@RequestMapping("/stores/{storeId}/products")
+@RequestMapping("/stores/{storeId}/skus")
 @RequiredArgsConstructor
 public class StoreSkuController {
     
@@ -22,8 +22,10 @@ public class StoreSkuController {
      * 获取门店商品列表
      */
     @GetMapping
-    public Result<List<StoreSku>> list(@PathVariable Long storeId) {
-        List<StoreSku> skus = storeSkuService.listByStoreId(storeId);
+    public Result<List<StoreSku>> list(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) String keyword) {
+        List<StoreSku> skus = storeSkuService.listByStoreId(storeId, keyword);
         return Result.success(skus);
     }
     
