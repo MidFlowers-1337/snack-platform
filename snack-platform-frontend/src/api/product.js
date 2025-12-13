@@ -10,6 +10,11 @@ export function getCategories() {
   })
 }
 
+// 兼容旧命名：部分页面使用 getProducts
+export function getProducts(params) {
+  return getAdminProducts(params)
+}
+
 // ==================== 系统管理员 API ====================
 
 // 获取分类列表（管理员）
