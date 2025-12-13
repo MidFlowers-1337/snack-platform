@@ -38,6 +38,11 @@ public class StoreSkuServiceImpl implements StoreSkuService {
     
     @Override
     public List<StoreSku> listByStoreId(Long storeId) {
+        return listByStoreId(storeId, null);
+    }
+    
+    @Override
+    public List<StoreSku> listByStoreId(Long storeId, String keyword) {
         LambdaQueryWrapper<StoreSku> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StoreSku::getStoreId, storeId)
                .eq(StoreSku::getStatus, 1)
@@ -47,6 +52,15 @@ public class StoreSkuServiceImpl implements StoreSkuService {
         
         // 填充商品信息
         fillProductInfo(skus);
+        
+        // 如果有关键字，按商品名称过滤
+        if (StringUtils.hasText(keyword)) {
+            skus = skus.stream()
+                    .filter(sku -> sku.getProduct() != null &&
+                            sku.getProduct().getName().contains(keyword))
+                    .collect(Collectors.toList());
+        }
+        
         return skus;
     }
     
@@ -79,9 +93,31 @@ public class StoreSkuServiceImpl implements StoreSkuService {
     
     @Override
     public IPage<StoreSku> pageByStoreId(Long storeId, int pageNum, int pageSize, String keyword, Integer status) {
+        // 如果有关键字搜索，先获取匹配的商品ID列表
+        List<Long> productIds = null;
+        if (StringUtils.hasText(keyword)) {
+            LambdaQueryWrapper<Product> productWrapper = new LambdaQueryWrapper<>();
+            productWrapper.like(Product::getName, keyword)
+                         .eq(Product::getStatus, 1);
+            List<Product> products = productMapper.selectList(productWrapper);
+            productIds = products.stream().map(Product::getId).collect(Collectors.toList());
+            
+            // 如果没有匹配的商品，直接返回空结果
+            if (productIds.isEmpty()) {
+                Page<StoreSku> emptyPage = new Page<>(pageNum, pageSize);
+                emptyPage.setRecords(List.of());
+                emptyPage.setTotal(0);
+                return emptyPage;
+            }
+        }
+        
         Page<StoreSku> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<StoreSku> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StoreSku::getStoreId, storeId);
+        
+        if (productIds != null) {
+            wrapper.in(StoreSku::getProductId, productIds);
+        }
         
         if (status != null) {
             wrapper.eq(StoreSku::getStatus, status);
@@ -92,16 +128,6 @@ public class StoreSkuServiceImpl implements StoreSkuService {
         
         // 填充商品信息
         fillProductInfo(result.getRecords());
-        
-        // 如果有关键字，需要过滤（因为关键字是针对商品名称的）
-        if (StringUtils.hasText(keyword)) {
-            List<StoreSku> filtered = result.getRecords().stream()
-                    .filter(sku -> sku.getProduct() != null && 
-                            sku.getProduct().getName().contains(keyword))
-                    .collect(Collectors.toList());
-            result.setRecords(filtered);
-            result.setTotal(filtered.size());
-        }
         
         return result;
     }

@@ -50,6 +50,44 @@
       </el-col>
     </el-row>
 
+    <!-- 销售趋势图 -->
+    <el-row :gutter="20">
+      <el-col :span="24">
+        <el-card class="chart-card" v-loading="chartLoading">
+          <template #header>
+            <div class="card-header">
+              <span>销售趋势（最近7天）</span>
+            </div>
+          </template>
+          <div ref="salesTrendChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 门店对比图 + 分类占比图 -->
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <el-card class="chart-card" v-loading="chartLoading">
+          <template #header>
+            <div class="card-header">
+              <span>门店销售对比（本月）</span>
+            </div>
+          </template>
+          <div ref="storeCompareChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card class="chart-card" v-loading="chartLoading">
+          <template #header>
+            <div class="card-header">
+              <span>商品分类销售占比（本月）</span>
+            </div>
+          </template>
+          <div ref="categoryPieChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="20">
       <!-- 门店销售排行 -->
       <el-col :span="12">
@@ -178,6 +216,7 @@ import { useRouter } from 'vue-router'
 import { Shop, Goods, ShoppingCart, Money, Grid, DataAnalysis } from '@element-plus/icons-vue'
 import { getAdminDashboard, getSalesReport } from '@/api/report'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 
 const router = useRouter()
 
@@ -192,6 +231,15 @@ const storeRanking = ref([])
 const productRanking = ref([])
 const recentOrders = ref([])
 const currentTime = ref('')
+const chartLoading = ref(false)
+
+// ECharts 实例引用
+const salesTrendChart = ref(null)
+const storeCompareChart = ref(null)
+const categoryPieChart = ref(null)
+let salesTrendChartInstance = null
+let storeCompareChartInstance = null
+let categoryPieChartInstance = null
 
 let timeInterval = null
 
@@ -258,16 +306,238 @@ const fetchDashboard = async () => {
   }
 }
 
+// 初始化销售趋势图（折线图）
+const initSalesTrendChart = () => {
+  if (!salesTrendChart.value) return
+  
+  salesTrendChartInstance = echarts.init(salesTrendChart.value)
+  
+  // 模拟数据：最近7天的销售额
+  const dates = []
+  const salesData = []
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date()
+    date.setDate(date.getDate() - i)
+    dates.push(`${date.getMonth() + 1}/${date.getDate()}`)
+    // 生成模拟销售数据
+    salesData.push((Math.random() * 5000 + 3000).toFixed(2))
+  }
+  
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross'
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: dates
+    },
+    yAxis: {
+      type: 'value',
+      name: '销售额（元）'
+    },
+    series: [
+      {
+        name: '销售额',
+        type: 'line',
+        smooth: true,
+        itemStyle: {
+          color: '#409eff'
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
+              { offset: 1, color: 'rgba(64, 158, 255, 0.05)' }
+            ]
+          }
+        },
+        data: salesData
+      }
+    ]
+  }
+  
+  salesTrendChartInstance.setOption(option)
+}
+
+// 初始化门店销售对比图（柱状图）
+const initStoreCompareChart = () => {
+  if (!storeCompareChart.value) return
+  
+  storeCompareChartInstance = echarts.init(storeCompareChart.value)
+  
+  // 使用实际的门店排行数据，如果没有则使用模拟数据
+  const storeNames = storeRanking.value.length > 0
+    ? storeRanking.value.slice(0, 5).map(s => s.name)
+    : ['朝阳门店', '海淀门店', '西城门店', '东城门店', '丰台门店']
+  
+  const storeSales = storeRanking.value.length > 0
+    ? storeRanking.value.slice(0, 5).map(s => s.salesAmount)
+    : [12500, 10800, 9600, 8900, 7500]
+  
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: storeNames,
+      axisLabel: {
+        interval: 0,
+        rotate: 30
+      }
+    },
+    yAxis: {
+      type: 'value',
+      name: '销售额（元）'
+    },
+    series: [
+      {
+        name: '销售额',
+        type: 'bar',
+        barWidth: '60%',
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: '#67c23a' },
+              { offset: 1, color: '#85ce61' }
+            ]
+          }
+        },
+        data: storeSales
+      }
+    ]
+  }
+  
+  storeCompareChartInstance.setOption(option)
+}
+
+// 初始化商品分类占比图（饼图）
+const initCategoryPieChart = () => {
+  if (!categoryPieChart.value) return
+  
+  categoryPieChartInstance = echarts.init(categoryPieChart.value)
+  
+  // 模拟数据：商品分类销售占比
+  const categoryData = [
+    { value: 3500, name: '膨化食品' },
+    { value: 2800, name: '糖果巧克力' },
+    { value: 2200, name: '坚果炒货' },
+    { value: 1800, name: '饼干糕点' },
+    { value: 1500, name: '果脯蜜饯' },
+    { value: 1200, name: '其他' }
+  ]
+  
+  const option = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: ¥{c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      right: '10%',
+      top: 'center'
+    },
+    series: [
+      {
+        name: '销售额',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['40%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 20,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: categoryData,
+        color: ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#c0c4cc']
+      }
+    ]
+  }
+  
+  categoryPieChartInstance.setOption(option)
+}
+
+// 初始化所有图表
+const initCharts = () => {
+  chartLoading.value = true
+  setTimeout(() => {
+    initSalesTrendChart()
+    initStoreCompareChart()
+    initCategoryPieChart()
+    chartLoading.value = false
+  }, 500)
+}
+
+// 响应式处理
+const handleResize = () => {
+  salesTrendChartInstance?.resize()
+  storeCompareChartInstance?.resize()
+  categoryPieChartInstance?.resize()
+}
+
 onMounted(() => {
-  fetchDashboard()
+  fetchDashboard().then(() => {
+    initCharts()
+  })
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval)
   }
+  window.removeEventListener('resize', handleResize)
+  
+  // 销毁图表实例
+  salesTrendChartInstance?.dispose()
+  storeCompareChartInstance?.dispose()
+  categoryPieChartInstance?.dispose()
 })
 </script>
 
@@ -372,5 +642,14 @@ onUnmounted(() => {
 
 .action-item span {
   font-size: 14px;
+}
+
+.chart-card {
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px;
 }
 </style>

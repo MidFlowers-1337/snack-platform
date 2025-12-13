@@ -17,6 +17,11 @@ public interface StoreSkuService {
     List<StoreSku> listByStoreId(Long storeId);
     
     /**
+     * 获取门店上架商品列表（消费者端，支持搜索）
+     */
+    List<StoreSku> listByStoreId(Long storeId, String keyword);
+    
+    /**
      * 根据门店和分类获取商品列表
      */
     List<StoreSku> listByStoreIdAndCategoryId(Long storeId, Long categoryId);

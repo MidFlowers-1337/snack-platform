@@ -9,7 +9,8 @@
     </div>
 
     <div class="cart-content" v-if="cartStore.items.length > 0">
-      <el-table :data="cartStore.items" style="width: 100%">
+      <!-- 桌面端表格视图 -->
+      <el-table :data="cartStore.items" style="width: 100%" class="desktop-table">
         <el-table-column label="商品" min-width="300">
           <template #default="{ row }">
             <div class="product-cell">
@@ -68,6 +69,50 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 移动端卡片视图 -->
+      <div class="mobile-cards">
+        <div class="cart-item-card" v-for="item in cartStore.items" :key="item.skuId">
+          <div class="item-main">
+            <el-image
+              :src="item.productImage || 'https://via.placeholder.com/80?text=Product'"
+              fit="cover"
+              class="item-image"
+            >
+              <template #error>
+                <div class="image-placeholder">
+                  <el-icon><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
+            <div class="item-info">
+              <div class="item-name">{{ item.productName }}</div>
+              <div class="item-stock">库存: {{ item.stock }}</div>
+              <div class="item-price">¥{{ item.price?.toFixed(2) }}</div>
+            </div>
+          </div>
+          <div class="item-actions">
+            <el-input-number
+              v-model="item.quantity"
+              :min="1"
+              :max="item.stock"
+              size="small"
+              @change="(val) => updateQuantity(item, val)"
+            />
+            <div class="item-subtotal">
+              小计: <span class="subtotal-price">¥{{ (item.price * item.quantity).toFixed(2) }}</span>
+            </div>
+            <el-button
+              type="danger"
+              text
+              size="small"
+              @click="removeItem(item)"
+            >
+              删除
+            </el-button>
+          </div>
+        </div>
+      </div>
 
       <div class="cart-footer">
         <div class="cart-actions">
@@ -247,6 +292,8 @@ onMounted(() => {
 .cart-page {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 10px;
+  padding-bottom: 80px; /* 为固定底部留出空间 */
 }
 
 .page-header {
@@ -254,6 +301,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding: 0 10px;
 }
 
 .page-header h1 {
@@ -266,6 +314,11 @@ onMounted(() => {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 默认隐藏移动端卡片视图 */
+.mobile-cards {
+  display: none;
 }
 
 .product-cell {
@@ -350,5 +403,179 @@ onMounted(() => {
   font-size: 24px;
   font-weight: bold;
   color: #f56c6c;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .cart-page {
+    padding: 0 5px 100px 5px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding: 0 10px;
+  }
+  
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  .page-header .el-button {
+    width: 100%;
+    height: 44px;
+  }
+  
+  .cart-content {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  /* 隐藏桌面端表格 */
+  .desktop-table {
+    display: none;
+  }
+  
+  /* 显示移动端卡片 */
+  .mobile-cards {
+    display: block;
+  }
+  
+  .cart-item-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    background: #fafafa;
+  }
+  
+  .item-main {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .item-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fa;
+  }
+  
+  .image-placeholder .el-icon {
+    font-size: 24px;
+    color: #c0c4cc;
+  }
+  
+  .item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .item-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  
+  .item-stock {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .item-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f56c6c;
+  }
+  
+  .item-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+  
+  .item-subtotal {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+  }
+  
+  .subtotal-price {
+    font-weight: bold;
+    color: #f56c6c;
+  }
+  
+  /* 固定底部结算栏 */
+  .cart-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 15px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .cart-actions {
+    order: 2;
+  }
+  
+  .cart-summary {
+    order: 1;
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+  
+  .summary-item .highlight {
+    font-size: 16px;
+  }
+  
+  .total-price {
+    font-size: 20px;
+  }
+  
+  .cart-summary .el-button {
+    width: 100%;
+    height: 48px;
+    font-size: 16px;
+    margin-top: 8px;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cart-page {
+    padding: 0 15px;
+  }
 }
 </style>

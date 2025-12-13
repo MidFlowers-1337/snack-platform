@@ -50,6 +50,30 @@
       </el-col>
     </el-row>
 
+    <!-- 订单状态分布图 + 热销商品图 -->
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <el-card class="chart-card" v-loading="chartLoading">
+          <template #header>
+            <div class="card-header">
+              <span>订单状态分布（本月）</span>
+            </div>
+          </template>
+          <div ref="orderStatusChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card class="chart-card" v-loading="chartLoading">
+          <template #header>
+            <div class="card-header">
+              <span>热销商品 TOP5（本月）</span>
+            </div>
+          </template>
+          <div ref="topProductsChart" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="20">
       <!-- 待处理订单 -->
       <el-col :span="12">
@@ -157,13 +181,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ShoppingCart, Money, Clock, Goods } from '@element-plus/icons-vue'
 import { getStoreDashboard } from '@/api/report'
 import { getStoreOrders, confirmOrder as confirmOrderApi, readyOrder as readyOrderApi } from '@/api/order'
 import { getMyStoreSkus, updateStoreSku } from '@/api/sku'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 
 const router = useRouter()
 
@@ -179,9 +204,16 @@ const lowStockSkus = ref([])
 const stockDialogVisible = ref(false)
 const currentSku = ref(null)
 const submittingStock = ref(false)
+const chartLoading = ref(false)
 const stockForm = reactive({
   addStock: 10
 })
+
+// ECharts 实例引用
+const orderStatusChart = ref(null)
+const topProductsChart = ref(null)
+let orderStatusChartInstance = null
+let topProductsChartInstance = null
 
 const getStatusType = (status) => {
   const types = {
@@ -289,10 +321,163 @@ const fetchLowStockSkus = async () => {
   }
 }
 
+// 初始化订单状态分布图（饼图）
+const initOrderStatusChart = () => {
+  if (!orderStatusChart.value) return
+  
+  orderStatusChartInstance = echarts.init(orderStatusChart.value)
+  
+  // 模拟数据：订单状态分布
+  const statusData = [
+    { value: 15, name: '待支付' },
+    { value: 8, name: '待确认' },
+    { value: 12, name: '备货中' },
+    { value: 20, name: '待取货' },
+    { value: 45, name: '已完成' }
+  ]
+  
+  const option = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c}单 ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      right: '10%',
+      top: 'center'
+    },
+    series: [
+      {
+        name: '订单数量',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['40%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 20,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: statusData,
+        color: ['#e6a23c', '#409eff', '#67c23a', '#f56c6c', '#909399']
+      }
+    ]
+  }
+  
+  orderStatusChartInstance.setOption(option)
+}
+
+// 初始化热销商品图（横向柱状图）
+const initTopProductsChart = () => {
+  if (!topProductsChart.value) return
+  
+  topProductsChartInstance = echarts.init(topProductsChart.value)
+  
+  // 模拟数据：热销商品 TOP5
+  const productNames = [
+    '乐事薯片原味',
+    '奥利奥饼干',
+    '旺旺雪饼',
+    '三只松鼠坚果',
+    '德芙巧克力'
+  ]
+  const salesCounts = [156, 142, 128, 115, 98]
+  
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'value',
+      name: '销量（件）'
+    },
+    yAxis: {
+      type: 'category',
+      data: productNames.reverse(),
+      axisLabel: {
+        interval: 0
+      }
+    },
+    series: [
+      {
+        name: '销量',
+        type: 'bar',
+        barWidth: '60%',
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 1,
+            y2: 0,
+            colorStops: [
+              { offset: 0, color: '#409eff' },
+              { offset: 1, color: '#67c23a' }
+            ]
+          },
+          borderRadius: [0, 10, 10, 0]
+        },
+        data: salesCounts.reverse()
+      }
+    ]
+  }
+  
+  topProductsChartInstance.setOption(option)
+}
+
+// 初始化所有图表
+const initCharts = () => {
+  chartLoading.value = true
+  setTimeout(() => {
+    initOrderStatusChart()
+    initTopProductsChart()
+    chartLoading.value = false
+  }, 500)
+}
+
+// 响应式处理
+const handleResize = () => {
+  orderStatusChartInstance?.resize()
+  topProductsChartInstance?.resize()
+}
+
 onMounted(() => {
   fetchDashboard()
   fetchPendingOrders()
   fetchLowStockSkus()
+  initCharts()
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  
+  // 销毁图表实例
+  orderStatusChartInstance?.dispose()
+  topProductsChartInstance?.dispose()
 })
 </script>
 
@@ -363,5 +548,14 @@ onMounted(() => {
 .low-stock {
   color: #f56c6c;
   font-weight: bold;
+}
+
+.chart-card {
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px;
 }
 </style>

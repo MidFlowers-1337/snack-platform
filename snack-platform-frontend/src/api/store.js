@@ -18,6 +18,11 @@ export function getStoreDetail(id) {
   })
 }
 
+// 兼容旧命名：部分页面使用 getStoreById
+export function getStoreById(id) {
+  return getStoreDetail(id)
+}
+
 // 获取门店商品列表（消费者）
 export function getStoreProducts(storeId, params) {
   return request({

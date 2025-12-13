@@ -18,11 +18,12 @@ export const useUserStore = defineStore('user', () => {
   // 登录
   async function login(credentials) {
     const res = await loginApi(credentials)
-    token.value = res.data.token
-    userInfo.value = res.data.user
-    localStorage.setItem('token', res.data.token)
-    localStorage.setItem('userInfo', JSON.stringify(res.data.user))
-    return res.data
+    const { token: tokenValue, ...user } = res.data
+    token.value = tokenValue
+    userInfo.value = user
+    localStorage.setItem('token', tokenValue)
+    localStorage.setItem('userInfo', JSON.stringify(user))
+    return { token: tokenValue, user }
   }
 
   // 获取用户信息

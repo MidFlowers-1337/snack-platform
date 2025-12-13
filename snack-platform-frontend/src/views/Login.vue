@@ -56,8 +56,8 @@
       <el-divider>测试账号</el-divider>
       <div class="test-accounts">
         <el-tag @click="fillTestAccount('admin', 'admin123')">系统管理员</el-tag>
-        <el-tag type="success" @click="fillTestAccount('store1', 'store123')">门店管理员</el-tag>
-        <el-tag type="warning" @click="fillTestAccount('user1', 'user123')">普通用户</el-tag>
+        <el-tag type="success" @click="fillTestAccount('store1', 'admin123')">门店管理员</el-tag>
+        <el-tag type="warning" @click="fillTestAccount('user1', 'admin123')">普通用户</el-tag>
       </div>
     </div>
   </div>
