@@ -1,6 +1,7 @@
 package com.snackchain.snack_platform_backend.module.order.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.snackchain.snack_platform_backend.common.annotation.OperationLog;
 import com.snackchain.snack_platform_backend.common.exception.BusinessException;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.common.result.ResultCode;
@@ -54,6 +55,7 @@ public class StoreAdminOrderController {
      * 接单
      */
     @PostMapping("/{id}/accept")
+    @OperationLog(module = "订单管理", operation = "门店接单")
     public Result<Void> accept(@PathVariable Long id) {
         Long storeId = getCurrentStoreId();
         orderService.accept(id, storeId);
@@ -64,6 +66,7 @@ public class StoreAdminOrderController {
      * 拒绝订单
      */
     @PostMapping("/{id}/reject")
+    @OperationLog(module = "订单管理", operation = "门店拒绝订单")
     public Result<Void> reject(@PathVariable Long id, @RequestBody RejectOrderDTO dto) {
         Long storeId = getCurrentStoreId();
         orderService.reject(id, storeId, dto.getReason());
@@ -74,6 +77,7 @@ public class StoreAdminOrderController {
      * 备货完成
      */
     @PostMapping("/{id}/ready")
+    @OperationLog(module = "订单管理", operation = "门店备货完成")
     public Result<Void> ready(@PathVariable Long id) {
         Long storeId = getCurrentStoreId();
         orderService.ready(id, storeId);
@@ -84,6 +88,7 @@ public class StoreAdminOrderController {
      * 核销订单（通过自提码）
      */
     @PostMapping("/verify")
+    @OperationLog(module = "订单管理", operation = "核销订单")
     public Result<Void> verify(@RequestParam String pickupCode) {
         Long storeId = getCurrentStoreId();
         orderService.verify(pickupCode, storeId);

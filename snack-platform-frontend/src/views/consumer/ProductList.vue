@@ -103,7 +103,7 @@
           <!-- 商品网格 -->
           <div class="product-grid" v-loading="loading">
             <div class="product-card" v-for="sku in skuList" :key="sku.id">
-              <div class="product-image">
+              <div class="product-image" @click="goToDetail(sku)">
                 <el-image
                   :src="sku.product?.image || 'https://via.placeholder.com/200?text=Product'"
                   fit="cover"
@@ -125,7 +125,7 @@
                 </div>
               </div>
 
-              <div class="product-info">
+              <div class="product-info" @click="goToDetail(sku)">
                 <div class="product-name">{{ sku.product?.name }}</div>
                 <div class="product-desc">{{ sku.product?.description || '美味零食，品质保证' }}</div>
                 <div class="product-price">
@@ -255,6 +255,10 @@ const getCategoryIcon = (name) => {
 
 const goToCart = () => {
   router.push('/cart')
+}
+
+const goToDetail = (sku) => {
+  router.push(`/stores/${storeId.value}/products/${sku.id}`)
 }
 
 const handleCategorySelect = (index) => {
@@ -630,6 +634,7 @@ onMounted(() => {
   overflow: hidden;
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .product-card:hover {
@@ -641,6 +646,7 @@ onMounted(() => {
   position: relative;
   height: 180px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .product-image .el-image {
@@ -695,6 +701,7 @@ onMounted(() => {
 
 .product-info {
   padding: 16px;
+  cursor: pointer;
 }
 
 .product-name {

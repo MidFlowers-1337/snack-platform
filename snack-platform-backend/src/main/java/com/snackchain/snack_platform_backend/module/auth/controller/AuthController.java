@@ -1,5 +1,6 @@
 package com.snackchain.snack_platform_backend.module.auth.controller;
 
+import com.snackchain.snack_platform_backend.common.annotation.OperationLog;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.module.auth.dto.LoginDTO;
 import com.snackchain.snack_platform_backend.module.auth.dto.RegisterDTO;
@@ -25,6 +26,7 @@ public class AuthController {
      * 用户注册
      */
     @PostMapping("/register")
+    @OperationLog(module = "认证模块", operation = "用户注册")
     public Result<LoginVO> register(@Valid @RequestBody RegisterDTO dto) {
         LoginVO vo = authService.register(dto);
         return Result.success(vo);
@@ -34,6 +36,7 @@ public class AuthController {
      * 用户登录
      */
     @PostMapping("/login")
+    @OperationLog(module = "认证模块", operation = "用户登录")
     public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
         LoginVO vo = authService.login(dto);
         return Result.success(vo);

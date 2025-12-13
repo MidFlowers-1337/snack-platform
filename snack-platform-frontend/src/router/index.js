@@ -13,6 +13,7 @@ const Register = () => import('@/views/Register.vue')
 const Home = () => import('@/views/consumer/Home.vue')
 const StoreList = () => import('@/views/consumer/StoreList.vue')
 const ProductList = () => import('@/views/consumer/ProductList.vue')
+const ProductDetail = () => import('@/views/consumer/ProductDetail.vue')
 const Cart = () => import('@/views/consumer/Cart.vue')
 const OrderList = () => import('@/views/consumer/OrderList.vue')
 const OrderDetail = () => import('@/views/consumer/OrderDetail.vue')
@@ -29,6 +30,8 @@ const AdminDashboard = () => import('@/views/admin/Dashboard.vue')
 const AdminCategoryList = () => import('@/views/admin/CategoryList.vue')
 const AdminProductList = () => import('@/views/admin/ProductList.vue')
 const AdminStoreList = () => import('@/views/admin/StoreList.vue')
+const AdminUserList = () => import('@/views/admin/UserList.vue')
+const AdminLogList = () => import('@/views/admin/LogList.vue')
 
 const routes = [
   // 公共路由
@@ -67,6 +70,12 @@ const routes = [
         name: 'ProductList',
         component: ProductList,
         meta: { title: '商品列表' }
+      },
+      {
+        path: 'stores/:storeId/products/:skuId',
+        name: 'ProductDetail',
+        component: ProductDetail,
+        meta: { title: '商品详情' }
       },
       {
         path: 'cart',
@@ -165,6 +174,18 @@ const routes = [
         name: 'AdminStoreList',
         component: AdminStoreList,
         meta: { title: '门店管理' }
+      },
+      {
+        path: 'users',
+        name: 'AdminUserList',
+        component: AdminUserList,
+        meta: { title: '用户管理' }
+      },
+      {
+        path: 'logs',
+        name: 'AdminLogList',
+        component: AdminLogList,
+        meta: { title: '操作日志' }
       }
     ]
   },

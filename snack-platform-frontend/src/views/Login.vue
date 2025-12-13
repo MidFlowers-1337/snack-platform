@@ -85,39 +85,42 @@
         </div>
       </el-form>
 
-      <el-divider>
-        <span class="divider-text">快速体验</span>
-      </el-divider>
-      
-      <div class="test-accounts">
-        <div class="account-card admin" @click="fillTestAccount('admin', 'admin123')">
-          <div class="account-icon">👨‍💼</div>
-          <div class="account-info">
-            <div class="account-name">系统管理员</div>
-            <div class="account-desc">管理平台</div>
+      <!-- 测试账号区域 - 仅在开发环境显示 -->
+      <template v-if="showTestAccounts">
+        <el-divider>
+          <span class="divider-text">快速体验</span>
+        </el-divider>
+        
+        <div class="test-accounts">
+          <div class="account-card admin" @click="fillTestAccount('admin', 'admin123')">
+            <div class="account-icon">👨‍💼</div>
+            <div class="account-info">
+              <div class="account-name">系统管理员</div>
+              <div class="account-desc">管理平台</div>
+            </div>
+          </div>
+          <div class="account-card store" @click="fillTestAccount('store1', 'admin123')">
+            <div class="account-icon">🏪</div>
+            <div class="account-info">
+              <div class="account-name">门店管理员</div>
+              <div class="account-desc">管理门店</div>
+            </div>
+          </div>
+          <div class="account-card user" @click="fillTestAccount('user1', 'admin123')">
+            <div class="account-icon">🛒</div>
+            <div class="account-info">
+              <div class="account-name">普通用户</div>
+              <div class="account-desc">购物体验</div>
+            </div>
           </div>
         </div>
-        <div class="account-card store" @click="fillTestAccount('store1', 'admin123')">
-          <div class="account-icon">🏪</div>
-          <div class="account-info">
-            <div class="account-name">门店管理员</div>
-            <div class="account-desc">管理门店</div>
-          </div>
-        </div>
-        <div class="account-card user" @click="fillTestAccount('user1', 'admin123')">
-          <div class="account-icon">🛒</div>
-          <div class="account-info">
-            <div class="account-name">普通用户</div>
-            <div class="account-desc">购物体验</div>
-          </div>
-        </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Shop, User, Lock, ShoppingCart, Location } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores'
@@ -129,6 +132,17 @@ const userStore = useUserStore()
 
 const formRef = ref()
 const loading = ref(false)
+
+// 是否显示测试账号 - 通过环境变量控制
+// 生产环境设置 VITE_SHOW_TEST_ACCOUNTS=false 或不设置
+const showTestAccounts = computed(() => {
+  const envValue = import.meta.env.VITE_SHOW_TEST_ACCOUNTS
+  // 开发模式默认显示，生产模式默认不显示
+  if (envValue === undefined || envValue === '') {
+    return import.meta.env.DEV
+  }
+  return envValue === 'true' || envValue === true
+})
 
 const form = reactive({
   username: '',

@@ -1,10 +1,12 @@
 # 数据库设计文档
 
-> **产品名称**：面向多门店协同的连锁零食电商平台  
-> **文档版本**：v1.0  
-> **数据库**：MySQL 8.0  
-> **字符集**：utf8mb4  
+> **产品名称**：面向多门店协同的连锁零食电商平台
+> **文档版本**：v1.0
+> **数据库**：MySQL 8.0
+> **字符集**：utf8mb4
 > **排序规则**：utf8mb4_general_ci
+>
+> 📚 相关文档：[架构设计](../02-Architecture/Architecture.md) | [API文档](../03-API/openapi.md) | [业务规则](../01-Requirements/BusinessRules.md)
 
 ---
 
@@ -29,10 +31,11 @@
 | 4 | categories | 商品分类表 | 平台商品分类 |
 | 5 | products | 平台商品表 | 平台统一管理的商品（SPU） |
 | 6 | store_products | 门店商品表 | 门店上架的商品，含库存和价格（SKU） |
-| 7 | cart_items | 购物车表 | 消费者购物车 |
+| 7 | cart_item | 购物车表 | 消费者购物车（用户+门店+SKU唯一） |
 | 8 | orders | 订单表 | 订单主表 |
 | 9 | order_items | 订单明细表 | 订单商品明细 |
 | 10 | pickup_records | 核销记录表 | 自提核销记录 |
+| 11 | operation_log | 操作日志表 | 系统关键业务操作审计追踪 |
 
 ### 1.2 ER关系图
 
@@ -256,30 +259,34 @@
 
 ---
 
-### 2.7 cart_items（购物车表）
+### 2.7 cart_item（购物车表）
 
 | 字段名 | 类型 | 允许空 | 默认值 | 说明 |
 |--------|------|--------|--------|------|
-| id | BIGINT | NO | AUTO_INCREMENT | 主键 |
+| id | BIGINT | NO | AUTO_INCREMENT | 购物车项ID |
 | user_id | BIGINT | NO | - | 用户ID |
 | store_id | BIGINT | NO | - | 门店ID |
-| store_product_id | BIGINT | NO | - | 门店商品ID |
-| quantity | INT | NO | 1 | 商品数量 |
-| selected | TINYINT | NO | 1 | 是否选中：0-否，1-是 |
-| create_time | DATETIME | NO | CURRENT_TIMESTAMP | 创建时间 |
-| update_time | DATETIME | NO | CURRENT_TIMESTAMP ON UPDATE | 更新时间 |
+| sku_id | BIGINT | NO | - | SKU ID（门店商品ID） |
+| quantity | INT | NO | 1 | 数量 |
+| created_at | DATETIME | NO | CURRENT_TIMESTAMP | 创建时间 |
+| updated_at | DATETIME | NO | CURRENT_TIMESTAMP ON UPDATE | 更新时间 |
 
 **索引**：
 | 索引名 | 类型 | 字段 | 说明 |
 |--------|------|------|------|
 | PRIMARY | 主键 | id | 主键索引 |
-| uk_user_store_product | 唯一 | user_id, store_product_id | 用户+门店商品唯一 |
-| idx_user_store | 普通 | user_id, store_id | 用户+门店复合索引 |
+| uk_user_store_sku | 唯一 | user_id, store_id, sku_id | 用户+门店+SKU唯一约束 |
+| idx_user_id | 普通 | user_id | 用户ID索引 |
+| idx_store_id | 普通 | store_id | 门店ID索引 |
 
 **关联**：
 - `user_id` → `users.id`
 - `store_id` → `stores.id`
-- `store_product_id` → `store_products.id`
+- `sku_id` → `store_skus.id`
+
+**业务说明**：
+- 同一用户在同一门店对同一SKU只能有一条购物车记录
+- 重复添加时应更新数量而非新增记录
 
 ---
 
@@ -485,8 +492,10 @@ categories (1) ──▶ products (1) ──▶ store_products
 
 | 版本 | 日期 | 修订内容 | 修订人 |
 |------|------|----------|--------|
-| v1.0 | 2024-XX-XX | 初始版本 | DBA |
+| v1.0 | 2024-12-01 | 初始版本 | DBA |
 
 ---
 
 > **文档说明**：本文档定义了系统的数据库表结构设计，开发团队应严格按照本文档创建数据库表。如有结构变更需求，须先更新本文档并经过评审。
+>
+> 📚 返回 [文档中心](../README.md)

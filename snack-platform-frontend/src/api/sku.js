@@ -11,6 +11,14 @@ export function getStoreSkus(storeId, params) {
   })
 }
 
+// 获取指定门店的单个SKU详情
+export function getStoreSku(storeId, skuId) {
+  return request({
+    url: `/stores/${storeId}/skus/${skuId}`,
+    method: 'get'
+  })
+}
+
 // ==================== 门店管理员 API ====================
 
 // 获取本店SKU列表

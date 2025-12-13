@@ -51,8 +51,15 @@ public class SecurityConfig {
         "/auth/login",
         "/stores",
         "/stores/**",
-        "/categories",
-        "/actuator/**"
+        "/categories"
+    };
+    
+    /**
+     * Actuator 端点路径 - 仅允许 health 和 info
+     */
+    private static final String[] ACTUATOR_PUBLIC_PATHS = {
+        "/actuator/health",
+        "/actuator/info"
     };
     
     @Bean
@@ -69,6 +76,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 公开接口
                 .requestMatchers(PUBLIC_PATHS).permitAll()
+                // Actuator 公开端点（仅 health 和 info）
+                .requestMatchers(ACTUATOR_PUBLIC_PATHS).permitAll()
+                // Actuator 其他端点需要系统管理员权限
+                .requestMatchers("/actuator/**").hasRole("SYSTEM_ADMIN")
                 // 门店管理员接口
                 .requestMatchers("/store/**").hasRole("STORE_ADMIN")
                 // 系统管理员接口
