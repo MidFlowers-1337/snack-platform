@@ -127,12 +127,10 @@ public class StoreServiceImpl implements StoreService {
         List<Store> stores = listOpen();
         
         if (longitude != null && latitude != null) {
-            // 计算距离并排序
+            // 计算距离并排序，处理门店坐标为null的情况
             stores.sort((s1, s2) -> {
-                double dist1 = calculateDistance(latitude.doubleValue(), longitude.doubleValue(),
-                        s1.getLatitude().doubleValue(), s1.getLongitude().doubleValue());
-                double dist2 = calculateDistance(latitude.doubleValue(), longitude.doubleValue(),
-                        s2.getLatitude().doubleValue(), s2.getLongitude().doubleValue());
+                double dist1 = calculateDistanceSafe(latitude.doubleValue(), longitude.doubleValue(), s1);
+                double dist2 = calculateDistanceSafe(latitude.doubleValue(), longitude.doubleValue(), s2);
                 return Double.compare(dist1, dist2);
             });
         }
@@ -141,6 +139,19 @@ public class StoreServiceImpl implements StoreService {
             return stores.subList(0, limit);
         }
         return stores;
+    }
+    
+    /**
+     * 安全计算距离，处理门店坐标为null的情况
+     * 如果门店坐标为null，返回最大距离值，使其排在最后
+     */
+    private double calculateDistanceSafe(double userLat, double userLon, Store store) {
+        if (store.getLatitude() == null || store.getLongitude() == null) {
+            // 坐标缺失的门店排在最后
+            return Double.MAX_VALUE;
+        }
+        return calculateDistance(userLat, userLon,
+                store.getLatitude().doubleValue(), store.getLongitude().doubleValue());
     }
     
     /**
