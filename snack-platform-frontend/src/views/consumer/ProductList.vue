@@ -18,7 +18,7 @@
 
     <el-row :gutter="20">
       <!-- 分类侧边栏 -->
-      <el-col :span="4">
+      <el-col :xs="0" :sm="6" :md="5" :lg="4">
         <div class="category-sidebar">
           <div class="category-title">商品分类</div>
           <el-menu
@@ -41,7 +41,7 @@
       </el-col>
 
       <!-- 商品列表 -->
-      <el-col :span="20">
+      <el-col :xs="24" :sm="18" :md="19" :lg="20">
         <div class="product-content">
           <!-- 搜索栏 -->
           <div class="search-bar">
@@ -61,7 +61,7 @@
 
           <!-- 商品网格 -->
           <el-row :gutter="16" v-loading="loading">
-            <el-col :span="6" v-for="sku in skuList" :key="sku.id">
+            <el-col :xs="12" :sm="12" :md="8" :lg="6" v-for="sku in skuList" :key="sku.id">
               <el-card class="product-card" shadow="hover">
                 <div class="product-image">
                   <el-image
@@ -276,6 +276,7 @@ onMounted(() => {
 .product-list {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0 10px;
 }
 
 .store-header {
@@ -333,7 +334,8 @@ onMounted(() => {
 }
 
 .search-bar .el-input {
-  width: 300px;
+  flex: 1;
+  max-width: 400px;
 }
 
 .product-card {
@@ -427,5 +429,111 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .product-list {
+    padding: 0 5px;
+  }
+  
+  .store-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .store-info h2 {
+    font-size: 18px;
+  }
+  
+  .store-address {
+    font-size: 13px;
+  }
+  
+  .store-header .el-button {
+    width: 100%;
+    height: 44px;
+  }
+  
+  /* 隐藏分类侧边栏，可以考虑后续添加抽屉式菜单 */
+  .category-sidebar {
+    display: none;
+  }
+  
+  .product-content {
+    padding: 15px;
+  }
+  
+  .search-bar {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .search-bar .el-input {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .search-bar .el-button {
+    width: 100%;
+    height: 44px;
+  }
+  
+  .product-card {
+    margin-bottom: 12px;
+  }
+  
+  .product-image {
+    height: 140px;
+  }
+  
+  .product-name {
+    font-size: 13px;
+  }
+  
+  .product-desc {
+    font-size: 11px;
+  }
+  
+  .product-price .price {
+    font-size: 16px;
+  }
+  
+  .product-action {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .product-action .el-input-number {
+    width: 100%;
+  }
+  
+  .product-action .el-button {
+    width: 100%;
+    height: 40px;
+  }
+  
+  .pagination {
+    margin-top: 15px;
+  }
+  
+  .pagination .el-pagination {
+    justify-content: center;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .product-list {
+    padding: 0 15px;
+  }
+  
+  .search-bar .el-input {
+    max-width: 300px;
+  }
 }
 </style>

@@ -239,3 +239,300 @@ const fetchOrders = async () => {
 onMounted(() => {
   fetchOrders()
 })
+</script>
+
+<style scoped>
+.order-list {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+.page-header {
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.order-content {
+  min-height: 400px;
+}
+
+.order-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.order-info {
+  display: flex;
+  gap: 20px;
+}
+
+.order-no {
+  font-weight: bold;
+  color: #333;
+}
+
+.order-time {
+  color: #999;
+  font-size: 13px;
+}
+
+.order-store {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.order-items {
+  margin-bottom: 15px;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fa;
+}
+
+.image-placeholder .el-icon {
+  font-size: 20px;
+  color: #c0c4cc;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.item-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.item-price {
+  font-size: 13px;
+  color: #999;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.order-total {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: #666;
+}
+
+.total-price {
+  font-size: 16px;
+  color: #333;
+}
+
+.total-price em {
+  font-size: 20px;
+  font-weight: bold;
+  color: #f56c6c;
+  font-style: normal;
+}
+
+.order-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pickup-code-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.pickup-code {
+  font-size: 48px;
+  font-weight: bold;
+  color: #409eff;
+  letter-spacing: 8px;
+  margin-bottom: 20px;
+}
+
+.pickup-tip {
+  color: #999;
+  font-size: 14px;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .order-list {
+    padding: 0 5px;
+  }
+  
+  .page-header {
+    margin-bottom: 15px;
+    padding: 0 10px;
+  }
+  
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  /* 标签页优化 */
+  .el-tabs {
+    margin-bottom: 15px;
+  }
+  
+  .order-card {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+  
+  .order-info {
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+  
+  .order-no {
+    font-size: 13px;
+  }
+  
+  .order-time {
+    font-size: 12px;
+  }
+  
+  .order-store {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  
+  .item {
+    padding: 8px 0;
+  }
+  
+  .item-image {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .item-name {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  
+  .item-price {
+    font-size: 12px;
+  }
+  
+  .order-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-top: 12px;
+  }
+  
+  .order-total {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .total-price {
+    font-size: 15px;
+  }
+  
+  .total-price em {
+    font-size: 18px;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .order-actions .el-button {
+    width: 100%;
+    height: 40px;
+  }
+  
+  .pagination {
+    margin-top: 15px;
+  }
+  
+  /* 取货码对话框优化 */
+  .pickup-code {
+    font-size: 36px;
+    letter-spacing: 6px;
+  }
+  
+  .pickup-tip {
+    font-size: 13px;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .order-list {
+    padding: 0 15px;
+  }
+}
+</style>

@@ -217,4 +217,103 @@ const handleCommand = (command) => {
   padding: 20px;
   overflow-y: auto;
 }
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .admin-layout {
+    height: 100vh;
+  }
+  
+  /* 侧边栏在移动端默认折叠 */
+  .aside {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    width: 200px !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+  
+  .aside.show {
+    transform: translateX(0);
+  }
+  
+  .logo {
+    height: 56px;
+    font-size: 16px;
+  }
+  
+  .logo .el-icon {
+    font-size: 20px;
+  }
+  
+  .header {
+    padding: 0 12px;
+    height: 56px;
+  }
+  
+  .header-left {
+    gap: 12px;
+  }
+  
+  .collapse-btn {
+    font-size: 24px;
+  }
+  
+  /* 隐藏面包屑 */
+  .el-breadcrumb {
+    display: none;
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
+  
+  /* 隐藏用户名 */
+  .username {
+    display: none;
+  }
+  
+  .main {
+    padding: 12px;
+    height: calc(100vh - 56px);
+  }
+  
+  /* 遮罩层 */
+  .aside::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  
+  .aside.show::before {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .aside {
+    width: 180px !important;
+  }
+  
+  .header {
+    padding: 0 15px;
+  }
+  
+  .main {
+    padding: 15px;
+  }
+}
 </style>

@@ -6,7 +6,7 @@
     </div>
 
     <el-row :gutter="20" v-loading="loading">
-      <el-col :span="8" v-for="store in stores" :key="store.id">
+      <el-col :xs="24" :sm="12" :md="8" :lg="8" v-for="store in stores" :key="store.id">
         <el-card class="store-card" shadow="hover" @click="selectStore(store)">
           <div class="store-image">
             <el-image
@@ -104,10 +104,12 @@ onMounted(() => {
 .store-list {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 10px;
 }
 
 .page-header {
   margin-bottom: 30px;
+  padding: 0 10px;
 }
 
 .page-header h1 {
@@ -118,6 +120,7 @@ onMounted(() => {
 
 .page-header p {
   color: #666;
+  font-size: 14px;
 }
 
 .store-card {
@@ -192,5 +195,53 @@ onMounted(() => {
 
 .store-action .el-button {
   width: 100%;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .store-list {
+    padding: 0 5px;
+  }
+  
+  .page-header {
+    margin-bottom: 20px;
+    padding: 0 10px;
+  }
+  
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  .page-header p {
+    font-size: 13px;
+  }
+  
+  .store-card {
+    margin-bottom: 15px;
+  }
+  
+  .store-image {
+    height: 180px;
+  }
+  
+  .store-name {
+    font-size: 16px;
+  }
+  
+  .store-detail {
+    font-size: 12px;
+  }
+  
+  .store-action .el-button {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .store-list {
+    padding: 0 15px;
+  }
 }
 </style>

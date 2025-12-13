@@ -184,4 +184,79 @@ const handleCommand = (command) => {
   height: 60px;
   line-height: 60px;
 }
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .header {
+    height: 56px;
+  }
+  
+  .header-content {
+    padding: 0 12px;
+  }
+  
+  .logo {
+    font-size: 18px;
+  }
+  
+  .logo .el-icon {
+    font-size: 22px;
+  }
+  
+  .logo span {
+    font-size: 16px;
+  }
+  
+  /* 隐藏导航菜单 */
+  .nav-menu {
+    display: none;
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
+  
+  .cart-badge {
+    margin-right: 0;
+  }
+  
+  /* 隐藏用户名文字，只显示头像 */
+  .username {
+    display: none;
+  }
+  
+  /* 登录按钮优化 */
+  .header-right .el-button {
+    padding: 8px 16px;
+    height: 36px;
+  }
+  
+  .main {
+    margin-top: 56px;
+    padding: 12px 8px;
+    min-height: calc(100vh - 106px);
+  }
+  
+  .footer {
+    height: 50px;
+    line-height: 50px;
+    font-size: 12px;
+    padding: 0 10px;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .header-content {
+    padding: 0 15px;
+  }
+  
+  .nav-menu {
+    margin-left: 20px;
+  }
+  
+  .main {
+    padding: 15px;
+  }
+}
 </style>
