@@ -1,6 +1,7 @@
 package com.snackchain.snack_platform_backend.module.store.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.snackchain.snack_platform_backend.common.annotation.OperationLog;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.entity.Store;
 import com.snackchain.snack_platform_backend.module.store.dto.StoreDTO;
@@ -44,6 +45,7 @@ public class AdminStoreController {
      * 创建门店
      */
     @PostMapping
+    @OperationLog(module = "门店管理", operation = "创建门店")
     public Result<Void> create(@Valid @RequestBody StoreDTO dto) {
         storeService.create(dto.getName(), dto.getAddress(), dto.getPhone(), dto.getImage(),
                 dto.getLongitude(), dto.getLatitude(), dto.getBusinessHours());
@@ -54,6 +56,7 @@ public class AdminStoreController {
      * 更新门店
      */
     @PutMapping("/{id}")
+    @OperationLog(module = "门店管理", operation = "更新门店")
     public Result<Void> update(@PathVariable Long id, @RequestBody StoreDTO dto) {
         storeService.update(id, dto.getName(), dto.getAddress(), dto.getPhone(), dto.getImage(),
                 dto.getLongitude(), dto.getLatitude(), dto.getBusinessHours(), dto.getStatus());
@@ -64,6 +67,7 @@ public class AdminStoreController {
      * 删除门店
      */
     @DeleteMapping("/{id}")
+    @OperationLog(module = "门店管理", operation = "删除门店")
     public Result<Void> delete(@PathVariable Long id) {
         storeService.delete(id);
         return Result.success();

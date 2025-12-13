@@ -2,6 +2,8 @@
 
 连锁零食电商平台后端服务
 
+> 📚 **项目文档**：[文档中心](../docs/README.md) | [快速开始](../docs/QUICKSTART.md) | [API 文档](../docs/03-API/openapi.md) | [数据库设计](../docs/04-DB/schema.md)
+
 ## 📋 技术栈
 
 - **框架**: Spring Boot 3.5.8
@@ -315,3 +317,7 @@ docker run -d -p 8080:8080 \
 ## 📄 许可证
 
 MIT License
+
+---
+
+📚 返回 [项目主页](../README.md) | [文档中心](../docs/README.md)

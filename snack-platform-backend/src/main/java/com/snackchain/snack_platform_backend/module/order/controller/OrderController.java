@@ -1,6 +1,7 @@
 package com.snackchain.snack_platform_backend.module.order.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.snackchain.snack_platform_backend.common.annotation.OperationLog;
 import com.snackchain.snack_platform_backend.common.exception.BusinessException;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.common.result.ResultCode;
@@ -26,6 +27,7 @@ public class OrderController {
      * 创建订单
      */
     @PostMapping
+    @OperationLog(module = "订单管理", operation = "创建订单")
     public Result<Order> create(@Valid @RequestBody CreateOrderDTO dto) {
         Long userId = getCurrentUserId();
         Order order = orderService.createOrder(userId, dto);
@@ -81,6 +83,7 @@ public class OrderController {
      * 支付订单（模拟支付）
      */
     @PostMapping("/{id}/pay")
+    @OperationLog(module = "订单管理", operation = "支付订单")
     public Result<Void> pay(@PathVariable Long id) {
         Long userId = getCurrentUserId();
         orderService.pay(id, userId);
@@ -91,6 +94,7 @@ public class OrderController {
      * 取消订单
      */
     @PostMapping("/{id}/cancel")
+    @OperationLog(module = "订单管理", operation = "取消订单")
     public Result<Void> cancel(@PathVariable Long id) {
         Long userId = getCurrentUserId();
         orderService.cancel(id, userId);
