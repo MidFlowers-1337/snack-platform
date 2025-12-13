@@ -53,6 +53,14 @@
             <el-icon><OfficeBuilding /></el-icon>
             <span>门店管理</span>
           </el-menu-item>
+          <el-menu-item index="/admin/users">
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/logs">
+            <el-icon><Document /></el-icon>
+            <span>操作日志</span>
+          </el-menu-item>
         </template>
       </el-menu>
     </el-aside>
@@ -105,9 +113,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { 
+import {
   Shop, DataLine, Goods, List, CircleCheck, Menu, OfficeBuilding,
-  Expand, Fold, User, ArrowDown, House, SwitchButton
+  Expand, Fold, User, ArrowDown, House, SwitchButton, Document
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'

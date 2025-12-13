@@ -2,6 +2,8 @@
 
 连锁零食电商平台前端应用
 
+> 📚 **项目文档**：[文档中心](../docs/README.md) | [快速开始](../docs/QUICKSTART.md) | [架构设计](../docs/02-Architecture/Architecture.md)
+
 ## 📋 技术栈
 
 - **框架**: Vue.js 3.5
@@ -455,3 +457,7 @@ onMounted(() => {})
 ## 📄 许可证
 
 MIT License
+
+---
+
+📚 返回 [项目主页](../README.md) | [文档中心](../docs/README.md)
