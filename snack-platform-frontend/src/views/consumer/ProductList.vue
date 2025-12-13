@@ -1,42 +1,67 @@
 <template>
   <div class="product-list">
-    <!-- 门店信息 -->
+    <!-- 门店信息头部 -->
     <div class="store-header" v-if="currentStore">
-      <div class="store-info">
-        <h2>{{ currentStore.name }}</h2>
-        <span class="store-address">
-          <el-icon><Location /></el-icon>
-          {{ currentStore.address }}
-        </span>
+      <div class="store-banner" :style="{ background: getStoreGradient(currentStore.id) }">
+        <div class="store-banner-content">
+          <div class="store-icon">🏪</div>
+          <div class="store-details">
+            <h2>{{ currentStore.name }}</h2>
+            <div class="store-meta">
+              <span class="store-address">
+                <el-icon><Location /></el-icon>
+                {{ currentStore.address }}
+              </span>
+              <span class="store-status" :class="{ open: currentStore.status === 1 }">
+                <span class="status-dot"></span>
+                {{ currentStore.status === 1 ? '营业中' : '休息中' }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
-      <el-button type="primary" plain @click="goToCart">
-        <el-icon><ShoppingCart /></el-icon>
-        购物车
-        <el-badge :value="cartStore.totalCount" v-if="cartStore.totalCount > 0" />
-      </el-button>
+      <div class="store-actions">
+        <div class="product-count">
+          <span class="count-number">{{ total }}</span>
+          <span class="count-label">件商品</span>
+        </div>
+        <el-button type="primary" round class="cart-btn" @click="goToCart">
+          <el-icon><ShoppingCart /></el-icon>
+          <span>购物车</span>
+          <el-badge :value="cartStore.totalCount" v-if="cartStore.totalCount > 0" :max="99" />
+        </el-button>
+      </div>
     </div>
 
     <el-row :gutter="20">
       <!-- 分类侧边栏 -->
       <el-col :xs="0" :sm="6" :md="5" :lg="4">
         <div class="category-sidebar">
-          <div class="category-title">商品分类</div>
-          <el-menu
-            :default-active="currentCategory"
-            @select="handleCategorySelect"
-          >
-            <el-menu-item index="all">
-              <el-icon><Grid /></el-icon>
-              <span>全部商品</span>
-            </el-menu-item>
-            <el-menu-item
+          <div class="category-header">
+            <el-icon><Grid /></el-icon>
+            <span>商品分类</span>
+          </div>
+          <div class="category-list">
+            <div 
+              class="category-item" 
+              :class="{ active: currentCategory === 'all' }"
+              @click="handleCategorySelect('all')"
+            >
+              <span class="category-icon">📦</span>
+              <span class="category-name">全部商品</span>
+              <span class="category-count">{{ total }}</span>
+            </div>
+            <div 
               v-for="cat in categories"
               :key="cat.id"
-              :index="String(cat.id)"
+              class="category-item"
+              :class="{ active: currentCategory === String(cat.id) }"
+              @click="handleCategorySelect(String(cat.id))"
             >
-              <span>{{ cat.name }}</span>
-            </el-menu-item>
-          </el-menu>
+              <span class="category-icon">{{ getCategoryIcon(cat.name) }}</span>
+              <span class="category-name">{{ cat.name }}</span>
+            </div>
+          </div>
         </div>
       </el-col>
 
@@ -45,85 +70,107 @@
         <div class="product-content">
           <!-- 搜索栏 -->
           <div class="search-bar">
-            <el-input
-              v-model="searchKeyword"
-              placeholder="搜索商品"
-              clearable
-              @clear="handleSearch"
-              @keyup.enter="handleSearch"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <div class="search-input-wrapper">
+              <el-input
+                v-model="searchKeyword"
+                placeholder="搜索您想要的零食..."
+                clearable
+                size="large"
+                @clear="handleSearch"
+                @keyup.enter="handleSearch"
+              >
+                <template #prefix>
+                  <el-icon class="search-icon"><Search /></el-icon>
+                </template>
+              </el-input>
+              <el-button type="primary" size="large" class="search-btn" @click="handleSearch">
+                搜索
+              </el-button>
+            </div>
+            <div class="search-tags" v-if="!searchKeyword">
+              <span class="tag-label">热门：</span>
+              <el-tag 
+                v-for="tag in hotTags" 
+                :key="tag" 
+                class="hot-tag"
+                @click="searchKeyword = tag; handleSearch()"
+              >
+                {{ tag }}
+              </el-tag>
+            </div>
           </div>
 
           <!-- 商品网格 -->
-          <el-row :gutter="16" v-loading="loading">
-            <el-col :xs="12" :sm="12" :md="8" :lg="6" v-for="sku in skuList" :key="sku.id">
-              <el-card class="product-card" shadow="hover">
-                <div class="product-image">
-                  <el-image
-                    :src="sku.product?.image || 'https://via.placeholder.com/200?text=Product'"
-                    fit="cover"
-                  >
-                    <template #error>
-                      <div class="image-placeholder">
-                        <el-icon><Picture /></el-icon>
-                      </div>
-                    </template>
-                  </el-image>
-                  <el-tag
-                    v-if="sku.stock <= 0"
-                    class="stock-tag"
-                    type="danger"
-                  >
-                    已售罄
-                  </el-tag>
-                  <el-tag
-                    v-else-if="sku.stock <= 10"
-                    class="stock-tag"
-                    type="warning"
-                  >
-                    仅剩{{ sku.stock }}件
-                  </el-tag>
+          <div class="product-grid" v-loading="loading">
+            <div class="product-card" v-for="sku in skuList" :key="sku.id">
+              <div class="product-image">
+                <el-image
+                  :src="sku.product?.image || 'https://via.placeholder.com/200?text=Product'"
+                  fit="cover"
+                >
+                  <template #error>
+                    <div class="image-placeholder">
+                      <span class="placeholder-emoji">🍿</span>
+                    </div>
+                  </template>
+                </el-image>
+                <div class="stock-badge sold-out" v-if="sku.stock <= 0">
+                  <span>已售罄</span>
                 </div>
-
-                <div class="product-info">
-                  <div class="product-name">{{ sku.product?.name }}</div>
-                  <div class="product-desc">{{ sku.product?.description }}</div>
-                  <div class="product-price">
-                    <span class="price">¥{{ sku.price?.toFixed(2) }}</span>
-                    <span class="original-price" v-if="sku.product?.price > sku.price">
-                      ¥{{ sku.product?.price?.toFixed(2) }}
-                    </span>
-                  </div>
+                <div class="stock-badge low-stock" v-else-if="sku.stock <= 10">
+                  <span>仅剩{{ sku.stock }}件</span>
                 </div>
+                <div class="discount-badge" v-if="sku.product?.price > sku.price">
+                  <span>特价</span>
+                </div>
+              </div>
 
-                <div class="product-action">
+              <div class="product-info">
+                <div class="product-name">{{ sku.product?.name }}</div>
+                <div class="product-desc">{{ sku.product?.description || '美味零食，品质保证' }}</div>
+                <div class="product-price">
+                  <span class="current-price">
+                    <span class="currency">¥</span>
+                    <span class="amount">{{ Math.floor(sku.price) }}</span>
+                    <span class="decimal">.{{ ((sku.price % 1) * 100).toFixed(0).padStart(2, '0') }}</span>
+                  </span>
+                  <span class="original-price" v-if="sku.product?.price > sku.price">
+                    ¥{{ sku.product?.price?.toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="product-action">
+                <div class="quantity-control">
                   <el-input-number
                     v-model="sku.quantity"
-                    :min="0"
+                    :min="1"
                     :max="sku.stock"
                     :disabled="sku.stock <= 0"
                     size="small"
+                    controls-position="right"
                     @change="(val) => handleQuantityChange(sku, val)"
                   />
-                  <el-button
-                    type="primary"
-                    size="small"
-                    :disabled="sku.stock <= 0 || !sku.quantity"
-                    @click="addToCart(sku)"
-                  >
-                    加入购物车
-                  </el-button>
                 </div>
-              </el-card>
-            </el-col>
-          </el-row>
+                <el-button
+                  type="primary"
+                  round
+                  class="add-cart-btn"
+                  :disabled="sku.stock <= 0"
+                  @click="addToCart(sku)"
+                >
+                  <el-icon><ShoppingCart /></el-icon>
+                  <span>加入购物车</span>
+                </el-button>
+              </div>
+            </div>
+          </div>
 
-          <el-empty v-if="!loading && skuList.length === 0" description="暂无商品" />
+          <el-empty v-if="!loading && skuList.length === 0" description="暂无商品">
+            <template #image>
+              <span style="font-size: 80px;">🔍</span>
+            </template>
+          </el-empty>
 
           <!-- 分页 -->
           <div class="pagination" v-if="total > 0">
@@ -133,6 +180,7 @@
               :total="total"
               :page-sizes="[12, 24, 36, 48]"
               layout="total, sizes, prev, pager, next"
+              background
               @size-change="handleSizeChange"
               @current-change="handlePageChange"
             />
@@ -169,6 +217,42 @@ const currentPage = ref(1)
 const pageSize = ref(12)
 const total = ref(0)
 
+// 热门搜索标签
+const hotTags = ['薯片', '巧克力', '坚果', '饼干', '糖果']
+
+// 门店渐变色
+const getStoreGradient = (id) => {
+  const gradients = [
+    'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
+    'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+  ]
+  return gradients[(id || 0) % gradients.length]
+}
+
+// 分类图标
+const getCategoryIcon = (name) => {
+  const icons = {
+    '薯片': '🥔',
+    '饼干': '🍪',
+    '糖果': '🍬',
+    '巧克力': '🍫',
+    '坚果': '🥜',
+    '果干': '🍇',
+    '肉类': '🥓',
+    '饮料': '🥤',
+    '膨化': '🍿',
+    '蛋糕': '🍰',
+  }
+  for (const key in icons) {
+    if (name.includes(key)) return icons[key]
+  }
+  return '🍿'
+}
+
 const goToCart = () => {
   router.push('/cart')
 }
@@ -194,13 +278,12 @@ const handlePageChange = () => {
 }
 
 const handleQuantityChange = (sku, val) => {
-  sku.quantity = val || 0
+  sku.quantity = val || 1
 }
 
 const addToCart = (sku) => {
   if (!sku.quantity || sku.quantity <= 0) {
-    ElMessage.warning('请选择数量')
-    return
+    sku.quantity = 1
   }
   
   cartStore.addItem({
@@ -213,7 +296,11 @@ const addToCart = (sku) => {
     stock: sku.stock
   })
   
-  ElMessage.success(`已添加 ${sku.quantity} 件 ${sku.product?.name} 到购物车`)
+  ElMessage({
+    message: `已添加 ${sku.quantity} 件 ${sku.product?.name} 到购物车 🛒`,
+    type: 'success',
+    duration: 2000
+  })
   sku.quantity = 1
 }
 
@@ -279,73 +366,280 @@ onMounted(() => {
   padding: 0 10px;
 }
 
+/* 门店头部 */
 .store-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 16px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.store-info h2 {
+.store-banner {
+  padding: 24px;
+  color: #fff;
+}
+
+.store-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.store-icon {
+  font-size: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.store-details h2 {
   margin: 0 0 8px;
-  font-size: 20px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.store-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  opacity: 0.9;
 }
 
 .store-address {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #666;
+}
+
+.store-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.store-status.open .status-dot {
+  background: #67C23A;
+  box-shadow: 0 0 8px rgba(103, 194, 58, 0.6);
+}
+
+.store-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #fff;
+}
+
+.product-count {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.count-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: #FF6B6B;
+}
+
+.count-label {
+  font-size: 14px;
+  color: #999;
+}
+
+.cart-btn {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border: none;
+  padding: 12px 24px;
+  font-size: 15px;
+}
+
+.cart-btn:hover {
+  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+}
+
+/* 分类侧边栏 */
+.category-sidebar {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 84px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.category-list {
+  padding: 8px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 4px;
+}
+
+.category-item:hover {
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.category-item.active {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  color: #fff;
+}
+
+.category-icon {
+  font-size: 20px;
+}
+
+.category-name {
+  flex: 1;
   font-size: 14px;
 }
 
-.category-sidebar {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+.category-count {
+  font-size: 12px;
+  color: #999;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
-.category-title {
-  padding: 15px 20px;
-  font-weight: bold;
-  border-bottom: 1px solid #eee;
+.category-item.active .category-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
-.category-sidebar .el-menu {
-  border-right: none;
-}
-
+/* 商品内容区 */
 .product-content {
   background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* 搜索栏 */
 .search-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-.search-bar .el-input {
+.search-input-wrapper {
+  display: flex;
+  gap: 12px;
+}
+
+.search-input-wrapper .el-input {
   flex: 1;
-  max-width: 400px;
+  max-width: 500px;
+}
+
+.search-input-wrapper :deep(.el-input__wrapper) {
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #e4e7ed inset;
+}
+
+.search-input-wrapper :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #c0c4cc inset;
+}
+
+.search-input-wrapper :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #FF6B6B inset;
+}
+
+.search-icon {
+  color: #999;
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 0 28px;
+}
+
+.search-btn:hover {
+  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+}
+
+.search-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tag-label {
+  font-size: 13px;
+  color: #999;
+}
+
+.hot-tag {
+  cursor: pointer;
+  border-radius: 20px;
+  border: none;
+  background: #f5f5f5;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.hot-tag:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #FF6B6B;
+}
+
+/* 商品网格 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  min-height: 200px;
 }
 
 .product-card {
-  margin-bottom: 16px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
 .product-image {
   position: relative;
-  height: 160px;
-  margin: -20px -20px 15px;
+  height: 180px;
   overflow: hidden;
 }
 
@@ -360,27 +654,52 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
 }
 
-.image-placeholder .el-icon {
-  font-size: 40px;
-  color: #c0c4cc;
+.placeholder-emoji {
+  font-size: 48px;
 }
 
-.stock-tag {
+.stock-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stock-badge.sold-out {
+  background: rgba(245, 108, 108, 0.9);
+  color: #fff;
+}
+
+.stock-badge.low-stock {
+  background: rgba(230, 162, 60, 0.9);
+  color: #fff;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .product-info {
-  margin-bottom: 12px;
+  padding: 16px;
 }
 
 .product-name {
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 600;
   color: #333;
   margin-bottom: 6px;
   overflow: hidden;
@@ -391,7 +710,7 @@ onMounted(() => {
 .product-desc {
   font-size: 12px;
   color: #999;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -403,92 +722,153 @@ onMounted(() => {
   gap: 8px;
 }
 
-.price {
-  font-size: 18px;
-  font-weight: bold;
-  color: #f56c6c;
+.current-price {
+  color: #FF6B6B;
+  font-weight: 700;
+}
+
+.current-price .currency {
+  font-size: 14px;
+}
+
+.current-price .amount {
+  font-size: 22px;
+}
+
+.current-price .decimal {
+  font-size: 14px;
 }
 
 .original-price {
   font-size: 12px;
-  color: #999;
+  color: #c0c4cc;
   text-decoration: line-through;
 }
 
 .product-action {
+  padding: 0 16px 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.product-action .el-input-number {
-  width: 100px;
+.quantity-control {
+  flex-shrink: 0;
 }
 
+.quantity-control .el-input-number {
+  width: 90px;
+}
+
+.quantity-control :deep(.el-input-number__decrease),
+.quantity-control :deep(.el-input-number__increase) {
+  border-radius: 8px;
+}
+
+.add-cart-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border: none;
+  font-size: 13px;
+}
+
+.add-cart-btn:hover {
+  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+}
+
+.add-cart-btn:disabled {
+  background: #e4e7ed;
+  color: #c0c4cc;
+}
+
+/* 分页 */
 .pagination {
-  margin-top: 20px;
+  margin-top: 24px;
   display: flex;
   justify-content: center;
+}
+
+.pagination :deep(.el-pagination.is-background .el-pager li.is-active) {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
 }
 
 /* 移动端优化 */
 @media (max-width: 768px) {
   .product-list {
-    padding: 0 5px;
+    padding: 0;
   }
   
   .store-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 15px;
-    margin-bottom: 15px;
+    border-radius: 0;
+    margin-bottom: 12px;
   }
   
-  .store-info h2 {
+  .store-banner {
+    padding: 16px;
+  }
+  
+  .store-icon {
+    font-size: 36px;
+    width: 56px;
+    height: 56px;
+  }
+  
+  .store-details h2 {
     font-size: 18px;
   }
   
-  .store-address {
+  .store-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    font-size: 12px;
+  }
+  
+  .store-actions {
+    padding: 12px 16px;
+  }
+  
+  .count-number {
+    font-size: 22px;
+  }
+  
+  .cart-btn {
+    padding: 10px 16px;
     font-size: 13px;
   }
   
-  .store-header .el-button {
-    width: 100%;
-    height: 44px;
-  }
-  
-  /* 隐藏分类侧边栏，可以考虑后续添加抽屉式菜单 */
-  .category-sidebar {
-    display: none;
-  }
-  
   .product-content {
-    padding: 15px;
+    border-radius: 0;
+    padding: 16px;
   }
   
-  .search-bar {
+  .search-input-wrapper {
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 15px;
   }
   
-  .search-bar .el-input {
-    width: 100%;
+  .search-input-wrapper .el-input {
     max-width: 100%;
   }
   
-  .search-bar .el-button {
+  .search-btn {
     width: 100%;
-    height: 44px;
   }
   
-  .product-card {
-    margin-bottom: 12px;
+  .search-tags {
+    flex-wrap: wrap;
+  }
+  
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   
   .product-image {
     height: 140px;
+  }
+  
+  .product-info {
+    padding: 12px;
   }
   
   .product-name {
@@ -497,43 +877,38 @@ onMounted(() => {
   
   .product-desc {
     font-size: 11px;
+    margin-bottom: 8px;
   }
   
-  .product-price .price {
-    font-size: 16px;
+  .current-price .amount {
+    font-size: 18px;
   }
   
   .product-action {
     flex-direction: column;
+    padding: 0 12px 12px;
     gap: 8px;
   }
   
-  .product-action .el-input-number {
+  .quantity-control .el-input-number {
     width: 100%;
   }
   
-  .product-action .el-button {
+  .add-cart-btn {
     width: 100%;
-    height: 40px;
-  }
-  
-  .pagination {
-    margin-top: 15px;
-  }
-  
-  .pagination .el-pagination {
-    justify-content: center;
   }
 }
 
 /* 平板优化 */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .product-list {
-    padding: 0 15px;
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
-  
-  .search-bar .el-input {
-    max-width: 300px;
+}
+
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 </style>
