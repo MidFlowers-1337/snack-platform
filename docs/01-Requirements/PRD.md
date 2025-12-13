@@ -1,8 +1,8 @@
 # 产品需求文档（PRD）
 
-> **产品名称**：面向多门店协同的连锁零食电商平台  
-> **文档版本**：v1.0  
-> **编写日期**：2024年  
+> **产品名称**：面向多门店协同的连锁零食电商平台
+> **文档版本**：v1.0
+> **编写日期**：2024年12月
 > **文档性质**：产品需求规格说明书（MVP + 二期规划）
 
 ---
@@ -391,10 +391,12 @@
 
 | 文档名称 | 路径 | 说明 |
 |----------|------|------|
-| 业务规则与边界说明 | docs/01-Requirements/BusinessRules.md | 详细的业务规则定义 |
-| 系统架构设计 | docs/02-Architecture/Architecture.md | 技术架构设计文档 |
-| 接口设计文档 | docs/03-API/API-Design.md | API接口规范 |
-| 数据库设计文档 | docs/04-Database/Database-Design.md | 数据库表结构设计 |
+| 业务规则与边界说明 | [BusinessRules.md](./BusinessRules.md) | 详细的业务规则定义 |
+| 系统架构设计 | [Architecture.md](../02-Architecture/Architecture.md) | 技术架构设计文档 |
+| REST API 文档 | [openapi.md](../03-API/openapi.md) | API接口规范 |
+| 数据库设计文档 | [schema.md](../04-DB/schema.md) | 数据库表结构设计 |
+| 测试计划 | [TestPlan.md](../05-Test/TestPlan.md) | 测试策略和用例 |
+| 产品待办列表 | [Backlog.md](../06-Plan/Backlog.md) | Epic和User Story |
 
 ---
 
@@ -402,8 +404,10 @@
 
 | 版本 | 日期 | 修订内容 | 修订人 |
 |------|------|----------|--------|
-| v1.0 | 2024-XX-XX | 初始版本，完成MVP+二期PRD | Product Manager |
+| v1.0 | 2024-12-01 | 初始版本，完成MVP+二期PRD | Product Manager |
 
 ---
 
 > **文档说明**：本PRD文档定义了产品的功能范围、优先级和交付计划。开发团队应严格按照本文档进行功能实现，如有需求变更须经过评审流程。
+>
+> 📚 返回 [文档中心](../README.md)

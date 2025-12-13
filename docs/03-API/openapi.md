@@ -1,9 +1,11 @@
 # REST API 接口文档
 
-> **产品名称**：面向多门店协同的连锁零食电商平台  
-> **文档版本**：v1.0  
-> **Base URL**：`http://localhost:8080/api`  
+> **产品名称**：面向多门店协同的连锁零食电商平台
+> **文档版本**：v1.0
+> **Base URL**：`http://localhost:8080/api`
 > **认证方式**：JWT Bearer Token
+>
+> 📚 相关文档：[架构设计](../02-Architecture/Architecture.md) | [数据库设计](../04-DB/schema.md) | [业务规则](../01-Requirements/BusinessRules.md)
 
 ---
 

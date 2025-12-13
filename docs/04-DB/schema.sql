@@ -20,6 +20,7 @@ USE snack_platform;
 -- ============================================================
 -- 删除已存在的表（按依赖顺序倒序删除）
 -- ============================================================
+DROP TABLE IF EXISTS cart_item;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS store_skus;
@@ -359,6 +360,46 @@ INSERT INTO orders (id, order_no, user_id, store_id, total_amount, status, picku
 -- 订单4的商品明细
 INSERT INTO order_items (id, order_id, sku_id, product_name, product_image, price, quantity, subtotal, create_time) VALUES
 (10, 4, 49, '百草味夏威夷果', '/images/products/bcw-macadamia.jpg', 33.00, 1, 33.00, '2025-12-11 16:00:00');
+
+-- ============================================================
+-- 8. 购物车表 (cart_item)
+-- 说明：存储用户在特定门店的购物车商品信息
+-- ============================================================
+CREATE TABLE cart_item (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '购物车项ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    store_id BIGINT NOT NULL COMMENT '门店ID',
+    sku_id BIGINT NOT NULL COMMENT 'SKU ID（门店商品ID）',
+    quantity INT NOT NULL DEFAULT 1 COMMENT '数量',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_user_store_sku (user_id, store_id, sku_id) COMMENT '用户+门店+SKU唯一约束',
+    KEY idx_user_id (user_id) COMMENT '用户ID索引',
+    KEY idx_store_id (store_id) COMMENT '门店ID索引'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='购物车表';
+
+-- ============================================================
+-- 9. 操作日志表 (operation_log)
+-- 说明：记录系统关键业务操作，便于审计追踪
+-- ============================================================
+CREATE TABLE operation_log (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '日志ID',
+    user_id BIGINT DEFAULT NULL COMMENT '操作用户ID',
+    username VARCHAR(50) DEFAULT NULL COMMENT '操作用户名',
+    module VARCHAR(50) NOT NULL COMMENT '操作模块',
+    operation VARCHAR(100) NOT NULL COMMENT '操作描述',
+    method VARCHAR(200) DEFAULT NULL COMMENT '请求方法',
+    params TEXT DEFAULT NULL COMMENT '请求参数',
+    ip VARCHAR(50) DEFAULT NULL COMMENT 'IP地址',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '操作状态：1成功 0失败',
+    error_msg TEXT DEFAULT NULL COMMENT '错误信息',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
+    PRIMARY KEY (id),
+    KEY idx_user_id (user_id),
+    KEY idx_module (module),
+    KEY idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='操作日志表';
 
 -- ============================================================
 -- ============================================================
