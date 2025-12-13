@@ -18,11 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -340,20 +340,25 @@ public class OrderServiceImpl implements OrderService {
         log.info("门店拒绝订单: orderNo={}, reason={}", order.getOrderNo(), reason);
     }
     
+    // 使用 SecureRandom 替代 Random，提高安全性
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    
     /**
-     * 生成订单编号
+     * 生成订单编号 - 使用 SecureRandom 增加随机性
      */
     private String generateOrderNo() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String random = String.format("%04d", new Random().nextInt(10000));
+        // 使用 SecureRandom 生成6位随机数，增加不可预测性
+        String random = String.format("%06d", SECURE_RANDOM.nextInt(1000000));
         return "ORD" + timestamp + random;
     }
     
     /**
-     * 生成自提码（6位数字）
+     * 生成自提码（6位数字）- 使用 SecureRandom 防止预测
      */
     private String generatePickupCode() {
-        return String.format("%06d", new Random().nextInt(1000000));
+        // 使用 SecureRandom 生成安全的随机取货码
+        return String.format("%06d", SECURE_RANDOM.nextInt(1000000));
     }
     
     /**

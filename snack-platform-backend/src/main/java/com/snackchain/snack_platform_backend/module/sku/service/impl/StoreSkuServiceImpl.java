@@ -208,18 +208,31 @@ public class StoreSkuServiceImpl implements StoreSkuService {
     @Override
     @Transactional
     public boolean deductStock(Long id, Integer quantity) {
-        // 使用乐观锁扣减库存
+        // 参数验证，防止负数或过大的值
+        if (quantity == null || quantity <= 0 || quantity > 99999) {
+            log.warn("扣减库存参数无效: skuId={}, quantity={}", id, quantity);
+            return false;
+        }
+        
+        // 使用乐观锁扣减库存 - 安全的参数化方式
+        StoreSku sku = storeSkuMapper.selectById(id);
+        if (sku == null || sku.getStock() < quantity) {
+            log.warn("扣减库存失败（库存不足）: skuId={}, quantity={}", id, quantity);
+            return false;
+        }
+        
+        // 使用 CAS 更新，避免 SQL 拼接
         LambdaUpdateWrapper<StoreSku> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(StoreSku::getId, id)
-               .ge(StoreSku::getStock, quantity)  // 库存必须大于等于扣减数量
-               .setSql("stock = stock - " + quantity);
+               .eq(StoreSku::getStock, sku.getStock())  // 乐观锁检查
+               .set(StoreSku::getStock, sku.getStock() - quantity);
         
         int rows = storeSkuMapper.update(null, wrapper);
         if (rows > 0) {
             log.info("扣减库存成功: skuId={}, quantity={}", id, quantity);
             return true;
         } else {
-            log.warn("扣减库存失败（库存不足）: skuId={}, quantity={}", id, quantity);
+            log.warn("扣减库存失败（并发冲突）: skuId={}, quantity={}", id, quantity);
             return false;
         }
     }
@@ -227,9 +240,22 @@ public class StoreSkuServiceImpl implements StoreSkuService {
     @Override
     @Transactional
     public void restoreStock(Long id, Integer quantity) {
+        // 参数验证
+        if (quantity == null || quantity <= 0 || quantity > 99999) {
+            log.warn("恢复库存参数无效: skuId={}, quantity={}", id, quantity);
+            return;
+        }
+        
+        StoreSku sku = storeSkuMapper.selectById(id);
+        if (sku == null) {
+            log.warn("恢复库存失败（SKU不存在）: skuId={}", id);
+            return;
+        }
+        
+        // 安全的参数化更新
         LambdaUpdateWrapper<StoreSku> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(StoreSku::getId, id)
-               .setSql("stock = stock + " + quantity);
+               .set(StoreSku::getStock, sku.getStock() + quantity);
         
         storeSkuMapper.update(null, wrapper);
         log.info("恢复库存成功: skuId={}, quantity={}", id, quantity);

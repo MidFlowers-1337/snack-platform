@@ -2,11 +2,11 @@ spring:
   application:
     name: snack-platform-backend
   
-  # 数据源配置
+  # 数据源配置 - 使用环境变量，提供默认值用于开发环境
   datasource:
-    url: jdbc:mysql://localhost:3306/snack_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: root
+    url: ${DB_URL:jdbc:mysql://localhost:3306/snack_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   
   # Jackson配置
@@ -21,7 +21,8 @@ mybatis-plus:
   type-aliases-package: com.snackchain.snack_platform_backend.entity
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 生产环境应移除或使用 SLF4J
+    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
   global-config:
     db-config:
       id-type: auto
@@ -29,19 +30,23 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# JWT配置
+# JWT配置 - 使用环境变量
 jwt:
-  secret: snack-platform-secret-key-must-be-at-least-256-bits-long-for-hs256
-  expiration: 86400000  # 24小时，单位毫秒
+  secret: ${JWT_SECRET:snack-platform-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24小时，单位毫秒
 
 # 服务器配置
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: /api
 
-# 日志配置
+# 日志配置 - 生产环境使用 info 级别
 logging:
   level:
-    com.snackchain: debug
-    org.springframework.security: debug
+    com.snackchain: ${LOG_LEVEL:info}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:warn}
+
+# CORS配置 - 生产环境应限制为实际域名
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
