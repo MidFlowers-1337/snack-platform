@@ -61,6 +61,14 @@
             <el-icon><Document /></el-icon>
             <span>操作日志</span>
           </el-menu-item>
+          <el-menu-item index="/admin/promotions">
+            <el-icon><Timer /></el-icon>
+            <span>促销管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/data-screen">
+            <el-icon><DataAnalysis /></el-icon>
+            <span>数据大屏</span>
+          </el-menu-item>
         </template>
       </el-menu>
     </el-aside>
@@ -115,7 +123,7 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   Shop, DataLine, Goods, List, CircleCheck, Menu, OfficeBuilding,
-  Expand, Fold, User, ArrowDown, House, SwitchButton, Document
+  Expand, Fold, User, ArrowDown, House, SwitchButton, Document, DataAnalysis, Timer
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'
