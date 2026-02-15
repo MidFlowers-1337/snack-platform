@@ -84,6 +84,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { getCategories, createCategory, updateCategory, deleteCategory as deleteCategoryApi } from '@/api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { formatTime } from '@/utils/format'
 
 const loading = ref(false)
 const categories = ref([])
@@ -105,11 +106,6 @@ const categoryRules = {
     { required: true, message: '请输入分类名称', trigger: 'blur' },
     { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
   ]
-}
-
-const formatTime = (time) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString('zh-CN')
 }
 
 const handleStatusChange = async (row) => {

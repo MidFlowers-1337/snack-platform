@@ -214,9 +214,11 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Shop, Goods, ShoppingCart, Money, Grid, DataAnalysis } from '@element-plus/icons-vue'
-import { getAdminDashboard, getSalesReport } from '@/api/report'
+import { getAdminDashboard, getAdminSalesReport } from '@/api/report'
 import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
+import echarts from '@/utils/echarts'
+import { formatTime } from '@/utils/format'
+import { getStatusType, getStatusText } from '@/utils/constants'
 
 const router = useRouter()
 
@@ -243,37 +245,6 @@ let categoryPieChartInstance = null
 
 let timeInterval = null
 
-const getStatusType = (status) => {
-  const types = {
-    'PENDING': 'warning',
-    'PAID': 'primary',
-    'CONFIRMED': 'primary',
-    'READY': 'success',
-    'COMPLETED': 'success',
-    'CANCELLED': 'info',
-    'REJECTED': 'danger'
-  }
-  return types[status] || 'info'
-}
-
-const getStatusText = (status) => {
-  const texts = {
-    'PENDING': '待支付',
-    'PAID': '已支付',
-    'CONFIRMED': '已确认',
-    'READY': '待取货',
-    'COMPLETED': '已完成',
-    'CANCELLED': '已取消',
-    'REJECTED': '已拒绝'
-  }
-  return texts[status] || status
-}
-
-const formatTime = (time) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString('zh-CN')
-}
-
 const updateTime = () => {
   currentTime.value = new Date().toLocaleString('zh-CN')
 }
@@ -291,7 +262,7 @@ const goToStores = () => {
 }
 
 const goToReport = () => {
-  router.push('/admin/report')
+  router.push('/admin/dashboard')
 }
 
 const fetchDashboard = async () => {
@@ -307,20 +278,46 @@ const fetchDashboard = async () => {
 }
 
 // 初始化销售趋势图（折线图）
-const initSalesTrendChart = () => {
+const initSalesTrendChart = async () => {
   if (!salesTrendChart.value) return
-  
+
   salesTrendChartInstance = echarts.init(salesTrendChart.value)
-  
-  // 模拟数据：最近7天的销售额
-  const dates = []
-  const salesData = []
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    dates.push(`${date.getMonth() + 1}/${date.getDate()}`)
-    // 生成模拟销售数据
-    salesData.push((Math.random() * 5000 + 3000).toFixed(2))
+
+  // 获取最近7天的真实销售数据
+  let dates = []
+  let salesData = []
+  let orderCountData = []
+
+  try {
+    const endDate = new Date().toISOString().split('T')[0]
+    const startDateObj = new Date()
+    startDateObj.setDate(startDateObj.getDate() - 6)
+    const startDate = startDateObj.toISOString().split('T')[0]
+
+    const res = await getAdminSalesReport({ startDate, endDate })
+    const reportData = res.data || []
+
+    if (reportData.length > 0) {
+      dates = reportData.map(item => {
+        const d = new Date(item.date)
+        return `${d.getMonth() + 1}/${d.getDate()}`
+      })
+      salesData = reportData.map(item => Number(item.sales || 0).toFixed(2))
+      orderCountData = reportData.map(item => item.orderCount || 0)
+    }
+  } catch (error) {
+    console.error('获取销售趋势数据失败:', error)
+  }
+
+  // 如果API无数据，使用日期占位（显示零值比假数据更诚实）
+  if (dates.length === 0) {
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      dates.push(`${date.getMonth() + 1}/${date.getDate()}`)
+      salesData.push('0.00')
+      orderCountData.push(0)
+    }
   }
   
   const option = {
@@ -502,14 +499,15 @@ const initCategoryPieChart = () => {
 }
 
 // 初始化所有图表
-const initCharts = () => {
+const initCharts = async () => {
   chartLoading.value = true
-  setTimeout(() => {
-    initSalesTrendChart()
+  try {
+    await initSalesTrendChart()
     initStoreCompareChart()
     initCategoryPieChart()
+  } finally {
     chartLoading.value = false
-  }, 500)
+  }
 }
 
 // 响应式处理

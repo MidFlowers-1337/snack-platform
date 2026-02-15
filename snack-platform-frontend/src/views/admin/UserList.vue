@@ -90,6 +90,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { getUserList, updateUserStatus, updateUserRole } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { formatTime } from '@/utils/format'
 
 // 加载状态
 const loading = ref(false)
@@ -105,21 +106,6 @@ const searchForm = reactive({
   username: '',
   role: ''
 })
-
-/**
- * 格式化时间
- */
-const formatTime = (time) => {
-  if (!time) return '-'
-  const date = new Date(time)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
 /**
  * 搜索

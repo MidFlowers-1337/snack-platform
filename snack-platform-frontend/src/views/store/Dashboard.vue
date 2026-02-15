@@ -181,16 +181,41 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ShoppingCart, Money, Clock, Goods } from '@element-plus/icons-vue'
 import { getStoreDashboard } from '@/api/report'
 import { getStoreOrders, confirmOrder as confirmOrderApi, readyOrder as readyOrderApi } from '@/api/order'
 import { getMyStoreSkus, updateStoreSku } from '@/api/sku'
-import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
+import { ElMessage, ElNotification } from 'element-plus'
+import echarts from '@/utils/echarts'
+import { getStatusType, getStatusText } from '@/utils/constants'
+import { useWebSocket } from '@/composables/useWebSocket'
+import { useUserStore } from '@/stores'
 
 const router = useRouter()
+const userStore = useUserStore()
+
+// ========== WebSocket 实时新订单通知 ==========
+const { connected, lastMessage, connect: wsConnect } = useWebSocket(
+  userStore.userInfo?.id,
+  userStore.storeId
+)
+
+// 监听 WebSocket 收到的新消息，弹出通知并自动刷新数据
+watch(lastMessage, (msg) => {
+  if (!msg) return
+  // 弹出 Element Plus 通知提醒门店管理员
+  ElNotification({
+    title: '新订单通知',
+    message: msg.message || msg.content || '您有一笔新订单，请及时处理',
+    type: 'success',
+    duration: 5000
+  })
+  // 自动刷新仪表盘统计数据和待处理订单列表
+  fetchDashboard()
+  fetchPendingOrders()
+})
 
 const dashboard = reactive({
   todayOrders: 0,
@@ -214,32 +239,6 @@ const orderStatusChart = ref(null)
 const topProductsChart = ref(null)
 let orderStatusChartInstance = null
 let topProductsChartInstance = null
-
-const getStatusType = (status) => {
-  const types = {
-    'PENDING': 'warning',
-    'PAID': 'primary',
-    'CONFIRMED': 'primary',
-    'READY': 'success',
-    'COMPLETED': 'success',
-    'CANCELLED': 'info',
-    'REJECTED': 'danger'
-  }
-  return types[status] || 'info'
-}
-
-const getStatusText = (status) => {
-  const texts = {
-    'PENDING': '待支付',
-    'PAID': '待确认',
-    'CONFIRMED': '备货中',
-    'READY': '待取货',
-    'COMPLETED': '已完成',
-    'CANCELLED': '已取消',
-    'REJECTED': '已拒绝'
-  }
-  return texts[status] || status
-}
 
 const goToOrders = () => {
   router.push('/store/orders')
@@ -324,17 +323,26 @@ const fetchLowStockSkus = async () => {
 // 初始化订单状态分布图（饼图）
 const initOrderStatusChart = () => {
   if (!orderStatusChart.value) return
-  
+
   orderStatusChartInstance = echarts.init(orderStatusChart.value)
-  
-  // 模拟数据：订单状态分布
+
+  // 使用真实 dashboard 数据填充订单状态分布
+  const pendingAccept = dashboard.pendingAcceptCount || dashboard.pendingOrders || 0
+  const pendingPickup = dashboard.pendingPickupCount || 0
+  const todayTotal = dashboard.todayOrderCount || dashboard.todayOrders || 0
+  // 已完成数 = 总数 - 待处理数（近似估算）
+  const completed = Math.max(0, todayTotal - pendingAccept - pendingPickup)
+
   const statusData = [
-    { value: 15, name: '待支付' },
-    { value: 8, name: '待确认' },
-    { value: 12, name: '备货中' },
-    { value: 20, name: '待取货' },
-    { value: 45, name: '已完成' }
-  ]
+    { value: pendingAccept, name: '待确认' },
+    { value: pendingPickup, name: '待取货' },
+    { value: completed, name: '已完成' }
+  ].filter(item => item.value > 0)
+
+  // 如果没有任何数据，显示提示
+  if (statusData.length === 0) {
+    statusData.push({ value: 1, name: '暂无订单' })
+  }
   
   const option = {
     tooltip: {
@@ -470,6 +478,8 @@ onMounted(() => {
   fetchLowStockSkus()
   initCharts()
   window.addEventListener('resize', handleResize)
+  // 建立 WebSocket 连接，接收实时新订单通知
+  wsConnect()
 })
 
 onUnmounted(() => {
