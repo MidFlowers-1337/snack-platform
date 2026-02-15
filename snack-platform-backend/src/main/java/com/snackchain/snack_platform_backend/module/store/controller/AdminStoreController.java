@@ -6,6 +6,8 @@ import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.entity.Store;
 import com.snackchain.snack_platform_backend.module.store.dto.StoreDTO;
 import com.snackchain.snack_platform_backend.module.store.service.StoreService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin/stores")
 @RequiredArgsConstructor
+@Tag(name = "门店管理-管理员")
 public class AdminStoreController {
     
     private final StoreService storeService;
@@ -23,6 +26,7 @@ public class AdminStoreController {
     /**
      * 分页获取门店列表
      */
+    @Operation(summary = "分页获取门店列表")
     @GetMapping
     public Result<IPage<Store>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -35,6 +39,7 @@ public class AdminStoreController {
     /**
      * 获取门店详情
      */
+    @Operation(summary = "获取门店详情")
     @GetMapping("/{id}")
     public Result<Store> getById(@PathVariable Long id) {
         Store store = storeService.getById(id);
@@ -44,6 +49,7 @@ public class AdminStoreController {
     /**
      * 创建门店
      */
+    @Operation(summary = "创建门店")
     @PostMapping
     @OperationLog(module = "门店管理", operation = "创建门店")
     public Result<Void> create(@Valid @RequestBody StoreDTO dto) {
@@ -55,6 +61,7 @@ public class AdminStoreController {
     /**
      * 更新门店
      */
+    @Operation(summary = "更新门店")
     @PutMapping("/{id}")
     @OperationLog(module = "门店管理", operation = "更新门店")
     public Result<Void> update(@PathVariable Long id, @RequestBody StoreDTO dto) {
@@ -66,6 +73,7 @@ public class AdminStoreController {
     /**
      * 删除门店
      */
+    @Operation(summary = "删除门店")
     @DeleteMapping("/{id}")
     @OperationLog(module = "门店管理", operation = "删除门店")
     public Result<Void> delete(@PathVariable Long id) {

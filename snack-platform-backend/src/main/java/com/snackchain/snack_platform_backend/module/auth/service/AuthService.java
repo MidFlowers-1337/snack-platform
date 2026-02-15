@@ -1,5 +1,6 @@
 package com.snackchain.snack_platform_backend.module.auth.service;
 
+import com.snackchain.snack_platform_backend.module.auth.dto.ChangePasswordDTO;
 import com.snackchain.snack_platform_backend.module.auth.dto.LoginDTO;
 import com.snackchain.snack_platform_backend.module.auth.dto.RegisterDTO;
 import com.snackchain.snack_platform_backend.module.auth.vo.LoginVO;
@@ -29,4 +30,9 @@ public interface AuthService {
      * 更新用户信息
      */
     void updateProfile(String nickname, String phone, String avatar);
+
+    /**
+     * 修改密码
+     */
+    void changePassword(ChangePasswordDTO dto);
 }

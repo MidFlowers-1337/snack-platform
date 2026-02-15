@@ -7,6 +7,8 @@ import com.snackchain.snack_platform_backend.module.report.service.ReportService
 import com.snackchain.snack_platform_backend.module.report.vo.DashboardVO;
 import com.snackchain.snack_platform_backend.module.report.vo.SalesReportVO;
 import com.snackchain.snack_platform_backend.security.context.UserContextHolder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/store/report")
 @RequiredArgsConstructor
+@Tag(name = "数据报表-门店")
 public class StoreReportController {
     
     private final ReportService reportService;
@@ -30,6 +33,7 @@ public class StoreReportController {
     /**
      * 获取门店仪表盘数据
      */
+    @Operation(summary = "获取门店仪表盘数据")
     @GetMapping("/dashboard")
     public Result<DashboardVO> dashboard() {
         Long storeId = getCurrentStoreId();
@@ -40,6 +44,7 @@ public class StoreReportController {
     /**
      * 获取门店销售报表
      */
+    @Operation(summary = "获取门店销售报表")
     @GetMapping("/sales")
     public Result<List<SalesReportVO>> salesReport(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,

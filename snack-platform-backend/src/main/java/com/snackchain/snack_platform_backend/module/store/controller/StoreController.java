@@ -3,6 +3,8 @@ package com.snackchain.snack_platform_backend.module.store.controller;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.entity.Store;
 import com.snackchain.snack_platform_backend.module.store.service.StoreService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/stores")
 @RequiredArgsConstructor
+@Tag(name = "门店信息")
 public class StoreController {
     
     private final StoreService storeService;
@@ -22,6 +25,7 @@ public class StoreController {
     /**
      * 获取所有营业中的门店列表
      */
+    @Operation(summary = "获取所有营业中的门店列表")
     @GetMapping
     public Result<List<Store>> list() {
         List<Store> stores = storeService.listOpen();
@@ -31,6 +35,7 @@ public class StoreController {
     /**
      * 获取门店详情
      */
+    @Operation(summary = "获取门店详情")
     @GetMapping("/{id}")
     public Result<Store> getById(@PathVariable Long id) {
         Store store = storeService.getById(id);
@@ -40,6 +45,7 @@ public class StoreController {
     /**
      * 获取附近门店
      */
+    @Operation(summary = "获取附近门店")
     @GetMapping("/nearby")
     public Result<List<Store>> nearby(
             @RequestParam(required = false) BigDecimal longitude,

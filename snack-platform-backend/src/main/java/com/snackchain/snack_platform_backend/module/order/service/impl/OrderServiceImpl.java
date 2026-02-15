@@ -11,6 +11,7 @@ import com.snackchain.snack_platform_backend.mapper.*;
 import com.snackchain.snack_platform_backend.module.order.dto.CreateOrderDTO;
 import com.snackchain.snack_platform_backend.module.order.dto.OrderItemDTO;
 import com.snackchain.snack_platform_backend.module.order.service.OrderService;
+import com.snackchain.snack_platform_backend.module.order.vo.OrderStatsVO;
 import com.snackchain.snack_platform_backend.module.sku.service.StoreSkuService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final StoreSkuMapper storeSkuMapper;
     private final ProductMapper productMapper;
     private final StoreSkuService storeSkuService;
+    private final com.snackchain.snack_platform_backend.common.service.NotificationService notificationService;
     
     @Override
     @Transactional
@@ -133,6 +136,9 @@ public class OrderServiceImpl implements OrderService {
         
         orderMapper.updateById(order);
         log.info("订单支付成功: orderNo={}, pickupCode={}", order.getOrderNo(), order.getPickupCode());
+
+        // WebSocket 通知门店：收到新订单
+        notificationService.notifyNewOrder(order.getStoreId(), order.getOrderNo(), order.getTotalAmount().doubleValue());
     }
     
     @Override
@@ -258,6 +264,9 @@ public class OrderServiceImpl implements OrderService {
         
         orderMapper.updateById(order);
         log.info("门店接单成功: orderNo={}, storeId={}", order.getOrderNo(), storeId);
+
+        // WebSocket 通知消费者：订单已被接受
+        notificationService.notifyOrderStatusChange(order.getUserId(), order.getOrderNo(), "CONFIRMED", "已确认");
     }
     
     @Override
@@ -281,6 +290,9 @@ public class OrderServiceImpl implements OrderService {
         
         orderMapper.updateById(order);
         log.info("备货完成: orderNo={}, storeId={}", order.getOrderNo(), storeId);
+
+        // WebSocket 通知消费者：订单已备好，请取货
+        notificationService.notifyOrderStatusChange(order.getUserId(), order.getOrderNo(), "READY", "待取货");
     }
     
     @Override
@@ -338,6 +350,9 @@ public class OrderServiceImpl implements OrderService {
         
         orderMapper.updateById(order);
         log.info("门店拒绝订单: orderNo={}, reason={}", order.getOrderNo(), reason);
+
+        // WebSocket 通知消费者：订单被拒绝
+        notificationService.notifyOrderStatusChange(order.getUserId(), order.getOrderNo(), "REJECTED", "已拒绝");
     }
     
     // 使用 SecureRandom 替代 Random，提高安全性
@@ -368,26 +383,68 @@ public class OrderServiceImpl implements OrderService {
         if (orders == null || orders.isEmpty()) {
             return;
         }
-        
+
         // 获取所有门店ID
         List<Long> storeIds = orders.stream()
                 .map(Order::getStoreId)
                 .filter(id -> id != null)
                 .distinct()
                 .collect(Collectors.toList());
-        
+
         // 批量查询门店
         Map<Long, Store> storeMap = storeIds.isEmpty() ? Map.of() :
                 storeMapper.selectBatchIds(storeIds).stream()
                         .collect(Collectors.toMap(Store::getId, s -> s));
-        
+
+        // 批量查询所有订单项（解决 N+1 查询问题）
+        List<Long> orderIds = orders.stream()
+                .map(Order::getId)
+                .collect(Collectors.toList());
+        Map<Long, List<OrderItem>> itemsMap = orderItemMapper.selectByOrderIds(orderIds)
+                .stream()
+                .collect(Collectors.groupingBy(OrderItem::getOrderId));
+
         // 填充门店信息和订单项
         for (Order order : orders) {
             if (order.getStoreId() != null) {
                 order.setStore(storeMap.get(order.getStoreId()));
             }
-            List<OrderItem> items = orderItemMapper.selectByOrderId(order.getId());
-            order.setItems(items);
+            order.setItems(itemsMap.getOrDefault(order.getId(), Collections.emptyList()));
         }
+    }
+
+    @Override
+    public OrderStatsVO getOrderStats(Long userId) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getUserId, userId);
+        List<Order> orders = orderMapper.selectList(
+                wrapper.select(Order::getStatus));
+
+        long total = orders.size();
+        long pendingPayment = orders.stream()
+                .filter(o -> OrderStatus.PENDING_PAYMENT.getCode().equals(o.getStatus()))
+                .count();
+        long processing = orders.stream()
+                .filter(o -> {
+                    int s = o.getStatus();
+                    return s == OrderStatus.PENDING_ACCEPT.getCode()
+                        || s == OrderStatus.ACCEPTED.getCode()
+                        || s == OrderStatus.READY_FOR_PICKUP.getCode();
+                })
+                .count();
+        long completed = orders.stream()
+                .filter(o -> OrderStatus.COMPLETED.getCode().equals(o.getStatus()))
+                .count();
+        long cancelled = orders.stream()
+                .filter(o -> OrderStatus.CANCELLED.getCode().equals(o.getStatus()))
+                .count();
+
+        return OrderStatsVO.builder()
+                .total(total)
+                .pendingPayment(pendingPayment)
+                .processing(processing)
+                .completed(completed)
+                .cancelled(cancelled)
+                .build();
     }
 }

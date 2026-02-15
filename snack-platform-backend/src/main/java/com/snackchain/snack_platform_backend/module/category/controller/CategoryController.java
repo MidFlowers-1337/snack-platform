@@ -3,6 +3,8 @@ package com.snackchain.snack_platform_backend.module.category.controller;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.entity.Category;
 import com.snackchain.snack_platform_backend.module.category.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@Tag(name = "商品分类")
 public class CategoryController {
     
     private final CategoryService categoryService;
@@ -23,6 +26,7 @@ public class CategoryController {
     /**
      * 获取所有启用的分类列表
      */
+    @Operation(summary = "获取所有启用的分类列表")
     @GetMapping
     public Result<List<Category>> list() {
         List<Category> categories = categoryService.listEnabled();

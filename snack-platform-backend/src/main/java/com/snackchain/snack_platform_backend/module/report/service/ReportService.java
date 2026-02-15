@@ -6,6 +6,8 @@ import com.snackchain.snack_platform_backend.module.report.vo.SalesReportVO;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.snackchain.snack_platform_backend.module.report.vo.RealtimeStatsVO;
+
 /**
  * 报表服务接口
  */
@@ -30,4 +32,9 @@ public interface ReportService {
      * 获取平台销售报表
      */
     List<SalesReportVO> getPlatformSalesReport(LocalDate startDate, LocalDate endDate);
+
+    /**
+     * 获取数据大屏实时统计数据
+     */
+    RealtimeStatsVO getRealtimeStats();
 }

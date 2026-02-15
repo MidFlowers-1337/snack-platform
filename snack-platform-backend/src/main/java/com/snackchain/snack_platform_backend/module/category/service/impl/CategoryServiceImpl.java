@@ -8,6 +8,8 @@ import com.snackchain.snack_platform_backend.mapper.CategoryMapper;
 import com.snackchain.snack_platform_backend.module.category.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
     
     @Override
+    @Cacheable(value = "categories", key = "'enabled'")
     public List<Category> listEnabled() {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Category::getStatus, 1)
@@ -32,6 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
     
     @Override
+    @Cacheable(value = "categories", key = "'all'")
     public List<Category> listAll() {
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByAsc(Category::getSort);
@@ -49,6 +53,7 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void create(String name, String icon, Integer sort) {
         Category category = new Category();
         category.setName(name);
@@ -62,6 +67,7 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void update(Long id, String name, String icon, Integer sort, Integer status) {
         Category category = getById(id);
         
@@ -84,6 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional
+    @CacheEvict(value = "categories", allEntries = true)
     public void delete(Long id) {
         Category category = getById(id);
         categoryMapper.deleteById(id);

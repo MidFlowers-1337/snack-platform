@@ -6,6 +6,8 @@ import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.entity.Product;
 import com.snackchain.snack_platform_backend.module.product.dto.ProductDTO;
 import com.snackchain.snack_platform_backend.module.product.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin/products")
 @RequiredArgsConstructor
+@Tag(name = "商品管理-管理员")
 public class AdminProductController {
     
     private final ProductService productService;
@@ -23,6 +26,7 @@ public class AdminProductController {
     /**
      * 分页获取商品列表
      */
+    @Operation(summary = "分页获取商品列表")
     @GetMapping
     public Result<IPage<Product>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -37,6 +41,7 @@ public class AdminProductController {
     /**
      * 获取商品详情
      */
+    @Operation(summary = "获取商品详情")
     @GetMapping("/{id}")
     public Result<Product> getById(@PathVariable Long id) {
         Product product = productService.getById(id);
@@ -46,6 +51,7 @@ public class AdminProductController {
     /**
      * 创建商品
      */
+    @Operation(summary = "创建商品")
     @PostMapping
     @OperationLog(module = "商品管理", operation = "创建商品")
     public Result<Void> create(@Valid @RequestBody ProductDTO dto) {
@@ -57,6 +63,7 @@ public class AdminProductController {
     /**
      * 更新商品
      */
+    @Operation(summary = "更新商品")
     @PutMapping("/{id}")
     @OperationLog(module = "商品管理", operation = "更新商品")
     public Result<Void> update(@PathVariable Long id, @RequestBody ProductDTO dto) {
@@ -68,6 +75,7 @@ public class AdminProductController {
     /**
      * 删除商品
      */
+    @Operation(summary = "删除商品")
     @DeleteMapping("/{id}")
     @OperationLog(module = "商品管理", operation = "删除商品")
     public Result<Void> delete(@PathVariable Long id) {
@@ -78,6 +86,7 @@ public class AdminProductController {
     /**
      * 上架商品
      */
+    @Operation(summary = "上架商品")
     @PutMapping("/{id}/on-shelf")
     public Result<Void> onShelf(@PathVariable Long id) {
         productService.onShelf(id);
@@ -87,6 +96,7 @@ public class AdminProductController {
     /**
      * 下架商品
      */
+    @Operation(summary = "下架商品")
     @PutMapping("/{id}/off-shelf")
     public Result<Void> offShelf(@PathVariable Long id) {
         productService.offShelf(id);

@@ -4,6 +4,8 @@ import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.entity.Category;
 import com.snackchain.snack_platform_backend.module.category.dto.CategoryDTO;
 import com.snackchain.snack_platform_backend.module.category.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/categories")
 @RequiredArgsConstructor
+@Tag(name = "分类管理-管理员")
 public class AdminCategoryController {
     
     private final CategoryService categoryService;
@@ -23,6 +26,7 @@ public class AdminCategoryController {
     /**
      * 获取所有分类列表
      */
+    @Operation(summary = "获取所有分类列表")
     @GetMapping
     public Result<List<Category>> list() {
         List<Category> categories = categoryService.listAll();
@@ -32,6 +36,7 @@ public class AdminCategoryController {
     /**
      * 获取分类详情
      */
+    @Operation(summary = "获取分类详情")
     @GetMapping("/{id}")
     public Result<Category> getById(@PathVariable Long id) {
         Category category = categoryService.getById(id);
@@ -41,6 +46,7 @@ public class AdminCategoryController {
     /**
      * 创建分类
      */
+    @Operation(summary = "创建分类")
     @PostMapping
     public Result<Void> create(@Valid @RequestBody CategoryDTO dto) {
         categoryService.create(dto.getName(), dto.getIcon(), dto.getSort());
@@ -50,6 +56,7 @@ public class AdminCategoryController {
     /**
      * 更新分类
      */
+    @Operation(summary = "更新分类")
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody CategoryDTO dto) {
         categoryService.update(id, dto.getName(), dto.getIcon(), dto.getSort(), dto.getStatus());
@@ -59,6 +66,7 @@ public class AdminCategoryController {
     /**
      * 删除分类
      */
+    @Operation(summary = "删除分类")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
