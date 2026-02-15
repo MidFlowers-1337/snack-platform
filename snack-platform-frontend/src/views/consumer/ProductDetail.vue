@@ -17,7 +17,7 @@
     <div v-else-if="error" class="error-container">
       <el-empty description="商品不存在或加载失败">
         <template #image>
-          <span style="font-size: 80px;">😢</span>
+          <el-icon :size="64" style="color: var(--color-text-muted)"><WarningFilled /></el-icon>
         </template>
         <el-button type="primary" @click="goBack">返回商品列表</el-button>
       </el-empty>
@@ -34,7 +34,7 @@
         >
           <template #error>
             <div class="image-placeholder">
-              <span class="placeholder-emoji">🍿</span>
+              <el-icon :size="48"><Goods /></el-icon>
             </div>
           </template>
         </el-image>
@@ -55,7 +55,7 @@
       <div class="product-info-section">
         <div class="info-card">
           <h1 class="product-name">{{ sku.product?.name }}</h1>
-          
+
           <div class="product-price">
             <span class="current-price">
               <span class="currency">¥</span>
@@ -101,7 +101,7 @@
               size="large"
             />
           </div>
-          
+
           <el-button
             type="primary"
             size="large"
@@ -121,7 +121,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, ShoppingCart } from '@element-plus/icons-vue'
+import { ArrowLeft, ShoppingCart, Goods, WarningFilled } from '@element-plus/icons-vue'
 import { getStoreSku } from '@/api/sku'
 import { useCartStore } from '@/stores'
 import { ElMessage } from 'element-plus'
@@ -162,12 +162,12 @@ const addToCart = () => {
     ElMessage.warning('商品已售罄')
     return
   }
-  
+
   if (quantity.value > sku.value.stock) {
     ElMessage.warning('购买数量不能超过库存')
     return
   }
-  
+
   // 添加到购物车
   for (let i = 0; i < quantity.value; i++) {
     cartStore.addItem({
@@ -180,13 +180,13 @@ const addToCart = () => {
       stock: sku.value.stock
     })
   }
-  
+
   ElMessage({
-    message: `已添加 ${quantity.value} 件 ${sku.value.product?.name} 到购物车 🛒`,
+    message: `已添加 ${quantity.value} 件 ${sku.value.product?.name} 到购物车`,
     type: 'success',
     duration: 2000
   })
-  
+
   // 重置数量
   quantity.value = 1
 }
@@ -210,27 +210,28 @@ onMounted(() => {
 
 .back-btn {
   font-size: 15px;
-  color: #666;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
 }
 
 .back-btn:hover {
-  color: #FF6B6B;
+  color: var(--color-primary);
 }
 
 /* 加载状态 */
 .loading-container {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 /* 错误状态 */
 .error-container {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   padding: 48px 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
   text-align: center;
 }
 
@@ -244,10 +245,10 @@ onMounted(() => {
 /* 商品图片区域 */
 .product-image-section {
   position: relative;
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .main-image {
@@ -261,11 +262,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-}
-
-.placeholder-emoji {
-  font-size: 80px;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
 }
 
 .stock-badge {
@@ -292,7 +290,7 @@ onMounted(() => {
   position: absolute;
   top: 16px;
   left: 16px;
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   color: #fff;
   padding: 6px 14px;
   border-radius: 20px;
@@ -310,16 +308,16 @@ onMounted(() => {
 .info-card,
 .description-card,
 .action-card {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .product-name {
   font-size: 22px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 16px;
   line-height: 1.4;
 }
@@ -332,7 +330,7 @@ onMounted(() => {
 }
 
 .current-price {
-  color: #FF6B6B;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -350,7 +348,7 @@ onMounted(() => {
 
 .original-price {
   font-size: 16px;
-  color: #c0c4cc;
+  color: var(--color-text-muted);
   text-decoration: line-through;
 }
 
@@ -368,7 +366,7 @@ onMounted(() => {
 
 .meta-label {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .stock-text {
@@ -389,13 +387,13 @@ onMounted(() => {
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 12px;
 }
 
 .description-text {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.8;
   margin: 0;
 }
@@ -410,7 +408,7 @@ onMounted(() => {
 
 .quantity-label {
   font-size: 15px;
-  color: #333;
+  color: var(--color-text);
   font-weight: 500;
 }
 
@@ -419,18 +417,19 @@ onMounted(() => {
   height: 50px;
   font-size: 16px;
   font-weight: 600;
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
 }
 
 .add-cart-btn:hover {
-  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  background: var(--color-primary-hover);
 }
 
 .add-cart-btn:disabled {
-  background: #e4e7ed;
-  color: #c0c4cc;
+  background: var(--color-border);
+  color: var(--color-text-muted);
 }
 
 /* 平板和桌面端优化 */
@@ -438,34 +437,34 @@ onMounted(() => {
   .product-detail {
     padding: 0 24px 32px;
   }
-  
+
   .detail-content {
     flex-direction: row;
     align-items: flex-start;
   }
-  
+
   .product-image-section {
     flex: 0 0 45%;
     position: sticky;
     top: 100px;
   }
-  
+
   .main-image {
     height: 400px;
   }
-  
+
   .product-info-section {
     flex: 1;
   }
-  
+
   .product-name {
     font-size: 26px;
   }
-  
+
   .current-price .amount {
     font-size: 36px;
   }
-  
+
   .product-meta {
     flex-direction: row;
     gap: 24px;

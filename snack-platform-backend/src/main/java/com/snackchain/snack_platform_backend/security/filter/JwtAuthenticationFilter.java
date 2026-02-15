@@ -1,9 +1,11 @@
 package com.snackchain.snack_platform_backend.security.filter;
 
+import com.snackchain.snack_platform_backend.common.service.TokenBlacklistService;
 import com.snackchain.snack_platform_backend.common.util.JwtUtil;
 import com.snackchain.snack_platform_backend.enums.UserRole;
 import com.snackchain.snack_platform_backend.security.context.UserContext;
 import com.snackchain.snack_platform_backend.security.context.UserContextHolder;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
     
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -41,11 +44,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = extractToken(request);
             
             if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
-                // 解析Token信息
-                Long userId = jwtUtil.getUserId(token);
-                String username = jwtUtil.getUsername(token);
-                String roleStr = jwtUtil.getRole(token);
-                Long storeId = jwtUtil.getStoreId(token);
+                // 检查 Token 是否在黑名单中（登出/修改密码后失效）
+                if (tokenBlacklistService.isBlacklisted(token)) {
+                    log.debug("Token 已被拉黑，拒绝认证");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                // 解析Token信息（仅解析一次，避免重复解析 4 次的性能问题）
+                Claims claims = jwtUtil.parseToken(token);
+                Long userId = claims.get("userId", Long.class);
+                String username = claims.getSubject();
+                String roleStr = claims.get("role", String.class);
+                Long storeId = claims.get("storeId", Long.class);
                 
                 UserRole role = UserRole.valueOf(roleStr);
                 

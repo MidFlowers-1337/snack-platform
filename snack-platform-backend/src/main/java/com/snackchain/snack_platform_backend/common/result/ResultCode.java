@@ -39,7 +39,15 @@ public enum ResultCode {
     ORDER_STATUS_ERROR(30002, "订单状态不允许此操作"),
     PICKUP_CODE_INVALID(30003, "自提码无效"),
     ORDER_ALREADY_VERIFIED(30004, "订单已核销"),
-    ORDER_NOT_BELONG_STORE(30005, "该订单不属于本店");
+    ORDER_NOT_BELONG_STORE(30005, "该订单不属于本店"),
+
+    // 购物车相关 40xxx
+    CART_ITEM_NOT_FOUND(40001, "购物车项不存在"),
+    CART_ITEM_EXISTS(40002, "该商品已在购物车中"),
+
+    // 密码相关 10xxx
+    OLD_PASSWORD_ERROR(10004, "原密码不正确"),
+    PASSWORD_NOT_MATCH(10005, "两次输入的密码不一致");
     
     private final Integer code;
     private final String message;

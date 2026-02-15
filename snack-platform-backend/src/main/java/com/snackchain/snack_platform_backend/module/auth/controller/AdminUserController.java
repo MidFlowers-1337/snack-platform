@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.Map;
 
 /**
@@ -29,6 +32,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
+@Tag(name = "用户管理-管理员")
 public class AdminUserController {
     
     private final UserMapper userMapper;
@@ -41,6 +45,7 @@ public class AdminUserController {
      * @param role 角色（可选，精确匹配）
      * @return 用户分页列表
      */
+    @Operation(summary = "分页获取用户列表")
     @GetMapping
     @RequireRole(UserRole.SYSTEM_ADMIN)
     public Result<IPage<User>> page(
@@ -84,6 +89,7 @@ public class AdminUserController {
      * @param body 请求体，包含enabled字段
      * @return 操作结果
      */
+    @Operation(summary = "更新用户状态")
     @PutMapping("/{id}/status")
     @RequireRole(UserRole.SYSTEM_ADMIN)
     @OperationLog(module = "用户管理", operation = "更新用户状态")
@@ -118,6 +124,7 @@ public class AdminUserController {
      * @param body 请求体，包含role字段
      * @return 操作结果
      */
+    @Operation(summary = "更新用户角色")
     @PutMapping("/{id}/role")
     @RequireRole(UserRole.SYSTEM_ADMIN)
     @OperationLog(module = "用户管理", operation = "更新用户角色")

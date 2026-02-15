@@ -8,6 +8,8 @@ import com.snackchain.snack_platform_backend.entity.OperationLog;
 import com.snackchain.snack_platform_backend.enums.UserRole;
 import com.snackchain.snack_platform_backend.mapper.OperationLogMapper;
 import com.snackchain.snack_platform_backend.security.annotation.RequireRole;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.StringUtils;
@@ -24,6 +26,7 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/admin/logs")
 @RequiredArgsConstructor
+@Tag(name = "操作日志-管理员")
 public class AdminOperationLogController {
     
     private final OperationLogMapper operationLogMapper;
@@ -38,6 +41,7 @@ public class AdminOperationLogController {
      * @param endTime 结束时间（可选）
      * @return 操作日志分页列表
      */
+    @Operation(summary = "分页获取操作日志列表")
     @GetMapping
     @RequireRole(UserRole.SYSTEM_ADMIN)
     public Result<IPage<OperationLog>> page(

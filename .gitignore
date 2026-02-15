@@ -1,3 +1,28 @@
 /.bmad-core
 /.roomodes
 /web-bundles
+
+# AI 工具配置
+/.claude/
+/.serena/
+
+# 系统临时文件
+nul
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 构建产物
+snack-platform-backend/target/
+snack-platform-frontend/dist/
+snack-platform-frontend/node_modules/
+
+# 环境配置（含敏感信息）
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log

@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { login as loginApi, getProfile } from '@/api/auth'
+import { getStorageItem } from '@/utils/storage'
 
 export const useUserStore = defineStore('user', () => {
   // 状态
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+  const userInfo = ref(getStorageItem('userInfo'))
 
   // 计算属性
   const isLoggedIn = computed(() => !!token.value)

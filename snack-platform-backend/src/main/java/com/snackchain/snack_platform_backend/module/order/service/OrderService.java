@@ -3,6 +3,7 @@ package com.snackchain.snack_platform_backend.module.order.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.snackchain.snack_platform_backend.entity.Order;
 import com.snackchain.snack_platform_backend.module.order.dto.CreateOrderDTO;
+import com.snackchain.snack_platform_backend.module.order.vo.OrderStatsVO;
 
 /**
  * 订单服务接口
@@ -63,4 +64,9 @@ public interface OrderService {
      * 门店拒绝订单
      */
     void reject(Long orderId, Long storeId, String reason);
+
+    /**
+     * 获取用户订单状态统计
+     */
+    OrderStatsVO getOrderStats(Long userId);
 }

@@ -6,6 +6,7 @@ import com.snackchain.snack_platform_backend.common.util.JwtUtil;
 import com.snackchain.snack_platform_backend.entity.User;
 import com.snackchain.snack_platform_backend.enums.UserRole;
 import com.snackchain.snack_platform_backend.mapper.UserMapper;
+import com.snackchain.snack_platform_backend.module.auth.dto.ChangePasswordDTO;
 import com.snackchain.snack_platform_backend.module.auth.dto.LoginDTO;
 import com.snackchain.snack_platform_backend.module.auth.dto.RegisterDTO;
 import com.snackchain.snack_platform_backend.module.auth.service.AuthService;
@@ -155,5 +156,34 @@ public class AuthServiceImpl implements AuthService {
         
         userMapper.updateById(user);
         log.info("用户信息更新成功: {}", user.getUsername());
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordDTO dto) {
+        // 校验两次密码是否一致
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new BusinessException(ResultCode.PASSWORD_NOT_MATCH);
+        }
+
+        Long userId = UserContextHolder.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+
+        // 验证原密码
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new BusinessException(ResultCode.OLD_PASSWORD_ERROR);
+        }
+
+        // 更新密码
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userMapper.updateById(user);
+        log.info("用户密码修改成功: {}", user.getUsername());
     }
 }

@@ -141,8 +141,18 @@
             style="width: 100%"
           />
         </el-form-item>
+        <!-- 商品图片：支持上传或手动输入URL -->
         <el-form-item label="商品图片" prop="image">
-          <el-input v-model="productForm.image" placeholder="请输入图片URL" />
+          <!-- 图片上传组件 -->
+          <ImageUpload v-model="productForm.image" tip="支持 JPG/PNG/GIF/WebP，最大 5MB" />
+          <!-- 或直接输入图片URL（作为备选方式） -->
+          <el-input
+            v-model="productForm.image"
+            placeholder="请输入图片URL"
+            style="margin-top: 8px"
+          >
+            <template #prepend>或直接输入图片URL</template>
+          </el-input>
         </el-form-item>
         <el-form-item label="商品描述" prop="description">
           <el-input
@@ -183,6 +193,9 @@ import {
   deleteProduct as deleteProductApi
 } from '@/api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { formatTime } from '@/utils/format'
+// 引入图片上传组件
+import ImageUpload from '@/components/ImageUpload.vue'
 
 const loading = ref(false)
 const products = ref([])
@@ -223,11 +236,6 @@ const productRules = {
   price: [
     { required: true, message: '请输入建议售价', trigger: 'blur' }
   ]
-}
-
-const formatTime = (time) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString('zh-CN')
 }
 
 const handleSearch = () => {

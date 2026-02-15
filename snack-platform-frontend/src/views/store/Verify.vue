@@ -156,6 +156,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Ticket, InfoFilled, CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue'
 import { getStoreOrders, verifyPickup } from '@/api/order'
 import { ElMessage } from 'element-plus'
+import { formatTime } from '@/utils/format'
 
 const pickupCode = ref('')
 const verifying = ref(false)
@@ -165,11 +166,6 @@ const readyOrders = ref([])
 const completedOrders = ref([])
 
 let refreshInterval = null
-
-const formatTime = (time) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString('zh-CN')
-}
 
 const selectOrder = (order) => {
   pickupCode.value = order.pickupCode

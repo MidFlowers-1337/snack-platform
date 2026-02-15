@@ -51,7 +51,23 @@ public class SecurityConfig {
         "/auth/login",
         "/stores",
         "/stores/**",
-        "/categories"
+        "/categories",
+        "/products/recommendations/**",
+        "/promotions/active",
+        "/uploads/**",
+        "/ws/**"
+    };
+
+    /**
+     * Swagger/OpenAPI 文档路径
+     */
+    private static final String[] SWAGGER_PATHS = {
+        "/api-docs/**",
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html",
+        "/swagger-resources/**",
+        "/webjars/**"
     };
     
     /**
@@ -76,6 +92,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 公开接口
                 .requestMatchers(PUBLIC_PATHS).permitAll()
+                // Swagger 文档路径
+                .requestMatchers(SWAGGER_PATHS).permitAll()
                 // Actuator 公开端点（仅 health 和 info）
                 .requestMatchers(ACTUATOR_PUBLIC_PATHS).permitAll()
                 // Actuator 其他端点需要系统管理员权限

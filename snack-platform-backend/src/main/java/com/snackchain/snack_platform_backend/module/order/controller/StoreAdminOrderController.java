@@ -9,6 +9,8 @@ import com.snackchain.snack_platform_backend.entity.Order;
 import com.snackchain.snack_platform_backend.module.order.dto.RejectOrderDTO;
 import com.snackchain.snack_platform_backend.module.order.service.OrderService;
 import com.snackchain.snack_platform_backend.security.context.UserContextHolder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/store/orders")
 @RequiredArgsConstructor
+@Tag(name = "订单管理-门店")
 public class StoreAdminOrderController {
     
     private final OrderService orderService;
@@ -25,6 +28,7 @@ public class StoreAdminOrderController {
     /**
      * 获取门店订单列表
      */
+    @Operation(summary = "获取门店订单列表")
     @GetMapping
     public Result<IPage<Order>> list(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -38,6 +42,7 @@ public class StoreAdminOrderController {
     /**
      * 获取订单详情
      */
+    @Operation(summary = "获取订单详情")
     @GetMapping("/{id}")
     public Result<Order> getById(@PathVariable Long id) {
         Long storeId = getCurrentStoreId();
@@ -54,6 +59,7 @@ public class StoreAdminOrderController {
     /**
      * 接单
      */
+    @Operation(summary = "接单")
     @PostMapping("/{id}/accept")
     @OperationLog(module = "订单管理", operation = "门店接单")
     public Result<Void> accept(@PathVariable Long id) {
@@ -65,6 +71,7 @@ public class StoreAdminOrderController {
     /**
      * 拒绝订单
      */
+    @Operation(summary = "拒绝订单")
     @PostMapping("/{id}/reject")
     @OperationLog(module = "订单管理", operation = "门店拒绝订单")
     public Result<Void> reject(@PathVariable Long id, @RequestBody RejectOrderDTO dto) {
@@ -76,6 +83,7 @@ public class StoreAdminOrderController {
     /**
      * 备货完成
      */
+    @Operation(summary = "备货完成")
     @PostMapping("/{id}/ready")
     @OperationLog(module = "订单管理", operation = "门店备货完成")
     public Result<Void> ready(@PathVariable Long id) {
@@ -87,6 +95,7 @@ public class StoreAdminOrderController {
     /**
      * 核销订单（通过自提码）
      */
+    @Operation(summary = "核销订单")
     @PostMapping("/verify")
     @OperationLog(module = "订单管理", operation = "核销订单")
     public Result<Void> verify(@RequestParam String pickupCode) {

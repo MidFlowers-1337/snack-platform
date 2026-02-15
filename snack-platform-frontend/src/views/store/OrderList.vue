@@ -230,6 +230,8 @@ import {
   readyOrder as readyOrderApi
 } from '@/api/order'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { formatTime } from '@/utils/format'
+import { getStatusType } from '@/utils/constants'
 
 const loading = ref(false)
 const orders = ref([])
@@ -261,19 +263,6 @@ const rejectForm = reactive({
   reason: ''
 })
 
-const getStatusType = (status) => {
-  const types = {
-    'PENDING': 'warning',
-    'PAID': 'primary',
-    'CONFIRMED': 'primary',
-    'READY': 'success',
-    'COMPLETED': 'success',
-    'CANCELLED': 'info',
-    'REJECTED': 'danger'
-  }
-  return types[status] || 'info'
-}
-
 const getStatusText = (status) => {
   const texts = {
     'PENDING': '待支付',
@@ -285,11 +274,6 @@ const getStatusText = (status) => {
     'REJECTED': '已拒绝'
   }
   return texts[status] || status
-}
-
-const formatTime = (time) => {
-  if (!time) return ''
-  return new Date(time).toLocaleString('zh-CN')
 }
 
 const filterByStatus = (status) => {

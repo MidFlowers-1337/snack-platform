@@ -8,6 +8,8 @@ import com.snackchain.snack_platform_backend.entity.StoreSku;
 import com.snackchain.snack_platform_backend.module.sku.dto.StoreSkuDTO;
 import com.snackchain.snack_platform_backend.module.sku.service.StoreSkuService;
 import com.snackchain.snack_platform_backend.security.context.UserContextHolder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/store/skus")
 @RequiredArgsConstructor
+@Tag(name = "门店商品管理-门店")
 public class StoreAdminSkuController {
     
     private final StoreSkuService storeSkuService;
@@ -25,6 +28,7 @@ public class StoreAdminSkuController {
     /**
      * 获取当前门店的商品列表
      */
+    @Operation(summary = "获取当前门店的商品列表")
     @GetMapping
     public Result<IPage<StoreSku>> page(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -39,6 +43,7 @@ public class StoreAdminSkuController {
     /**
      * 获取门店商品详情
      */
+    @Operation(summary = "获取门店商品详情")
     @GetMapping("/{id}")
     public Result<StoreSku> getById(@PathVariable Long id) {
         StoreSku sku = storeSkuService.getById(id);
@@ -50,6 +55,7 @@ public class StoreAdminSkuController {
     /**
      * 添加门店商品
      */
+    @Operation(summary = "添加门店商品")
     @PostMapping
     public Result<Void> create(@Valid @RequestBody StoreSkuDTO dto) {
         Long storeId = getCurrentStoreId();
@@ -60,6 +66,7 @@ public class StoreAdminSkuController {
     /**
      * 更新门店商品
      */
+    @Operation(summary = "更新门店商品")
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id, @RequestBody StoreSkuDTO dto) {
         StoreSku sku = storeSkuService.getById(id);
@@ -71,6 +78,7 @@ public class StoreAdminSkuController {
     /**
      * 删除门店商品
      */
+    @Operation(summary = "删除门店商品")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         StoreSku sku = storeSkuService.getById(id);
@@ -82,6 +90,7 @@ public class StoreAdminSkuController {
     /**
      * 上架门店商品
      */
+    @Operation(summary = "上架门店商品")
     @PutMapping("/{id}/on-shelf")
     public Result<Void> onShelf(@PathVariable Long id) {
         StoreSku sku = storeSkuService.getById(id);
@@ -93,6 +102,7 @@ public class StoreAdminSkuController {
     /**
      * 下架门店商品
      */
+    @Operation(summary = "下架门店商品")
     @PutMapping("/{id}/off-shelf")
     public Result<Void> offShelf(@PathVariable Long id) {
         StoreSku sku = storeSkuService.getById(id);
