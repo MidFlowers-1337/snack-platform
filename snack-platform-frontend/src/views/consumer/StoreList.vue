@@ -2,11 +2,8 @@
   <div class="store-list">
     <!-- 页面头部 -->
     <div class="page-header">
-      <div class="header-content">
-        <h1>🏪 选择门店</h1>
-        <p>选择您附近的门店，开启美味零食之旅</p>
-      </div>
-      <div class="header-decoration"></div>
+      <h1 class="page-title">选择门店</h1>
+      <p class="page-desc">选择您附近的门店，开始选购零食</p>
     </div>
 
     <!-- 门店统计 -->
@@ -22,67 +19,71 @@
     </div>
 
     <!-- 门店列表 -->
-    <el-row :gutter="24" v-loading="loading" class="store-grid">
-      <el-col :xs="24" :sm="12" :md="8" :lg="8" v-for="store in stores" :key="store.id">
-        <div class="store-card" :class="{ 'store-closed': store.status !== 1 }" @click="selectStore(store)">
-          <!-- 门店图片/装饰区域 -->
-          <div class="store-banner" :style="{ background: getStoreGradient(store.id) }">
-            <div class="banner-pattern"></div>
-            <div class="store-icon">
-              <el-icon><Shop /></el-icon>
-            </div>
-            <el-tag
-              class="store-status-tag"
-              :type="store.status === 1 ? 'success' : 'info'"
-              effect="dark"
-            >
-              <el-icon v-if="store.status === 1"><CircleCheck /></el-icon>
-              <el-icon v-else><Clock /></el-icon>
-              {{ store.status === 1 ? '营业中' : '休息中' }}
-            </el-tag>
+    <div v-loading="loading" class="store-grid">
+      <div
+        v-for="store in stores"
+        :key="store.id"
+        class="store-card"
+        :class="{ 'store-closed': store.status !== 1 }"
+        @click="selectStore(store)"
+      >
+        <!-- 门店顶部区域 -->
+        <div class="store-banner">
+          <div class="store-icon">
+            <el-icon><Shop /></el-icon>
           </div>
-          
-          <!-- 门店信息 -->
-          <div class="store-content">
-            <div class="store-name">{{ store.name }}</div>
-            
-            <div class="store-details">
-              <div class="detail-item">
-                <el-icon class="detail-icon"><Location /></el-icon>
-                <span class="detail-text">{{ store.address }}</span>
-              </div>
-              <div class="detail-item">
-                <el-icon class="detail-icon"><Phone /></el-icon>
-                <span class="detail-text">{{ store.phone || '暂无电话' }}</span>
-              </div>
-              <div class="detail-item">
-                <el-icon class="detail-icon"><Clock /></el-icon>
-                <span class="detail-text">{{ store.businessHours || '09:00-22:00' }}</span>
-              </div>
-            </div>
+          <span
+            class="store-card-status"
+            :class="{ open: store.status === 1 }"
+          >
+            <el-icon v-if="store.status === 1"><CircleCheck /></el-icon>
+            <el-icon v-else><Clock /></el-icon>
+            {{ store.status === 1 ? '营业中' : '休息中' }}
+          </span>
+        </div>
 
-            <!-- 操作按钮 -->
-            <div class="store-action">
-              <el-button
-                :type="store.status === 1 ? 'primary' : 'info'"
-                :disabled="store.status !== 1"
-                round
-                class="action-btn"
-                @click.stop="selectStore(store)"
-              >
-                <el-icon v-if="store.status === 1"><ShoppingCart /></el-icon>
-                {{ store.status === 1 ? '进入购物' : '暂停营业' }}
-              </el-button>
+        <!-- 门店信息 -->
+        <div class="store-content">
+          <div class="store-name">{{ store.name }}</div>
+
+          <div class="store-details">
+            <div class="detail-item">
+              <el-icon class="detail-icon"><Location /></el-icon>
+              <span class="detail-text">{{ store.address }}</span>
             </div>
+            <div class="detail-item">
+              <el-icon class="detail-icon"><Phone /></el-icon>
+              <span class="detail-text">{{ store.phone || '暂无电话' }}</span>
+            </div>
+            <div class="detail-item">
+              <el-icon class="detail-icon"><Clock /></el-icon>
+              <span class="detail-text">{{ store.businessHours || '09:00-22:00' }}</span>
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="store-action">
+            <el-button
+              :type="store.status === 1 ? 'primary' : 'info'"
+              :disabled="store.status !== 1"
+              round
+              class="action-btn"
+              @click.stop="selectStore(store)"
+            >
+              <el-icon v-if="store.status === 1"><ShoppingCart /></el-icon>
+              {{ store.status === 1 ? '进入购物' : '暂停营业' }}
+            </el-button>
           </div>
         </div>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
     <!-- 空状态 -->
     <el-empty v-if="!loading && stores.length === 0" description="暂无门店">
       <template #image>
-        <div class="empty-icon">🏪</div>
+        <div class="empty-icon">
+          <el-icon><Shop /></el-icon>
+        </div>
       </template>
     </el-empty>
   </div>
@@ -106,19 +107,6 @@ const loading = ref(false)
 const openStoreCount = computed(() => {
   return stores.value.filter(s => s.status === 1).length
 })
-
-// 根据门店ID生成不同的渐变色
-const getStoreGradient = (id) => {
-  const gradients = [
-    'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
-    'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  ]
-  return gradients[id % gradients.length]
-}
 
 const selectStore = (store) => {
   if (store.status !== 1) {
@@ -148,299 +136,277 @@ onMounted(() => {
 
 <style scoped>
 .store-list {
-  max-width: 1200px;
+  max-width: var(--max-width, 1200px);
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 var(--space-md);
 }
 
 /* 页面头部 */
 .page-header {
-  position: relative;
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-  border-radius: 20px;
-  padding: 40px 30px;
-  margin-bottom: 30px;
-  overflow: hidden;
+  padding: var(--space-xl) 0 var(--space-lg);
 }
 
-.header-content {
-  position: relative;
-  z-index: 2;
-}
-
-.page-header h1 {
-  font-size: 28px;
-  color: #fff;
-  margin-bottom: 10px;
+.page-title {
+  font-size: 24px;
   font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+  line-height: 1.3;
 }
 
-.page-header p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 16px;
-}
-
-.header-decoration {
-  position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 200px;
-  height: 200px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-}
-
-.header-decoration::after {
-  content: '';
-  position: absolute;
-  top: 50px;
-  left: 50px;
-  width: 150px;
-  height: 150px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+.page-desc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 
 /* 门店统计 */
 .store-stats {
   display: flex;
-  gap: 30px;
-  margin-bottom: 24px;
-  padding: 0 8px;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
 }
 
 .stat-item {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .stat-number {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  color: #FF6B6B;
+  color: var(--color-primary);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
-/* 门店网格 */
+/* 门店网格 — CSS Grid */
 .store-grid {
-  margin: 0 -12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
 }
 
 /* 门店卡片 */
 .store-card {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
   overflow: hidden;
-  margin-bottom: 24px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .store-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
 }
 
 .store-card.store-closed {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .store-card.store-closed:hover {
-  transform: none;
+  border-color: var(--color-border);
+  box-shadow: none;
 }
 
-/* 门店横幅 */
+/* 门店顶部区域 */
 .store-banner {
   position: relative;
-  height: 140px;
+  height: 120px;
+  background: var(--color-accent-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-}
-
-.banner-pattern {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);
 }
 
 .store-icon {
-  width: 70px;
-  height: 70px;
-  background: rgba(255, 255, 255, 0.25);
+  width: 56px;
+  height: 56px;
+  background: var(--color-surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
 }
 
 .store-icon .el-icon {
-  font-size: 36px;
-  color: #fff;
+  font-size: 28px;
+  color: var(--color-accent);
 }
 
-.store-status-tag {
+/* 营业状态标签 */
+.store-card-status {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
   font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  line-height: 1;
+}
+
+.store-card-status.open {
+  color: var(--color-success);
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
 }
 
 /* 门店内容 */
 .store-content {
-  padding: 20px;
+  padding: var(--space-md);
 }
 
 .store-name {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 16px;
+  color: var(--color-text);
+  margin-bottom: var(--space-md);
   line-height: 1.4;
 }
 
 .store-details {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-md);
 }
 
 .detail-item {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
 }
 
 .detail-icon {
-  color: #FF6B6B;
-  font-size: 16px;
+  color: var(--color-text-muted);
+  font-size: 15px;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 .detail-text {
-  color: #666;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
   line-height: 1.5;
 }
 
 /* 操作按钮 */
 .store-action {
-  text-align: center;
+  margin-top: var(--space-md);
 }
 
 .action-btn {
   width: 100%;
-  height: 44px;
-  font-size: 15px;
+  height: 40px;
+  font-size: 14px;
   font-weight: 500;
 }
 
 .action-btn .el-icon {
-  margin-right: 6px;
+  margin-right: 4px;
 }
 
 /* 空状态 */
 .empty-icon {
-  font-size: 80px;
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--space-md);
+  background: var(--color-accent-light);
+  border-radius: 50%;
 }
 
-/* 移动端优化 */
+.empty-icon .el-icon {
+  font-size: 36px;
+  color: var(--color-accent);
+}
+
+/* 移动端 — 单列 */
 @media (max-width: 768px) {
   .store-list {
-    padding: 0 12px;
+    padding: 0 var(--space-sm);
   }
-  
+
   .page-header {
-    padding: 30px 20px;
-    border-radius: 16px;
-    margin-bottom: 20px;
+    padding: var(--space-lg) 0 var(--space-md);
   }
-  
-  .page-header h1 {
-    font-size: 22px;
+
+  .page-title {
+    font-size: 20px;
   }
-  
-  .page-header p {
-    font-size: 14px;
-  }
-  
-  .store-stats {
-    gap: 20px;
-    margin-bottom: 16px;
-  }
-  
-  .stat-number {
-    font-size: 24px;
-  }
-  
-  .store-card {
-    margin-bottom: 16px;
-    border-radius: 12px;
-  }
-  
-  .store-banner {
-    height: 120px;
-  }
-  
-  .store-icon {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .store-icon .el-icon {
-    font-size: 30px;
-  }
-  
-  .store-content {
-    padding: 16px;
-  }
-  
-  .store-name {
-    font-size: 16px;
-    margin-bottom: 12px;
-  }
-  
-  .detail-item {
-    margin-bottom: 8px;
-  }
-  
-  .detail-text {
+
+  .page-desc {
     font-size: 13px;
   }
-  
+
+  .store-stats {
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .stat-number {
+    font-size: 22px;
+  }
+
+  .store-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  .store-banner {
+    height: 100px;
+  }
+
+  .store-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .store-icon .el-icon {
+    font-size: 24px;
+  }
+
+  .store-content {
+    padding: var(--space-sm) var(--space-md) var(--space-md);
+  }
+
+  .store-name {
+    font-size: 15px;
+    margin-bottom: var(--space-sm);
+  }
+
   .action-btn {
-    height: 46px;
-    font-size: 16px;
+    height: 42px;
+    font-size: 15px;
   }
 }
 
-/* 平板优化 */
+/* 平板 — 双列 */
 @media (min-width: 769px) and (max-width: 1024px) {
   .store-list {
-    padding: 0 20px;
+    padding: 0 var(--space-lg);
   }
-  
-  .page-header {
-    padding: 35px 25px;
+
+  .store-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

@@ -3,13 +3,12 @@
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-left">
-        <span class="header-emoji">🛒</span>
         <div class="header-text">
           <h1>购物车</h1>
           <p v-if="cartStore.items.length > 0">共 {{ cartStore.totalCount }} 件商品</p>
         </div>
       </div>
-      <el-button type="primary" round class="continue-btn" @click="goBack">
+      <el-button type="primary" class="continue-btn" @click="goBack">
         <el-icon><ArrowLeft /></el-icon>
         <span>继续购物</span>
       </el-button>
@@ -19,7 +18,7 @@
       <!-- 当前门店信息 -->
       <div class="store-info-bar" v-if="currentStoreName">
         <div class="store-badge">
-          <span class="store-icon">🏪</span>
+          <el-icon :size="16"><Shop /></el-icon>
           <span class="store-name">{{ currentStoreName }}</span>
         </div>
       </div>
@@ -45,7 +44,7 @@
                   >
                     <template #error>
                       <div class="image-placeholder">
-                        <span class="placeholder-emoji">🍿</span>
+                        <el-icon :size="24"><Goods /></el-icon>
                       </div>
                     </template>
                   </el-image>
@@ -101,7 +100,7 @@
             >
               <template #error>
                 <div class="image-placeholder">
-                  <span class="placeholder-emoji">🍿</span>
+                  <el-icon :size="24"><Goods /></el-icon>
                 </div>
               </template>
             </el-image>
@@ -167,7 +166,7 @@
               </span>
             </div>
           </div>
-          <el-button type="primary" size="large" round class="checkout-btn" @click="checkout">
+          <el-button type="primary" size="large" class="checkout-btn" @click="checkout">
             去结算
           </el-button>
         </div>
@@ -177,10 +176,10 @@
     <!-- 空购物车 -->
     <div class="empty-cart" v-else>
       <div class="empty-content">
-        <span class="empty-emoji">🛒</span>
+        <el-icon :size="48" class="empty-icon"><ShoppingCart /></el-icon>
         <h3>购物车是空的</h3>
         <p>快去挑选心仪的零食吧~</p>
-        <el-button type="primary" round size="large" @click="goToStores">
+        <el-button type="primary" size="large" @click="goToStores">
           去逛逛
         </el-button>
       </div>
@@ -195,11 +194,11 @@
     >
       <template #header>
         <div class="dialog-header">
-          <span class="dialog-emoji">📋</span>
+          <el-icon :size="20"><Document /></el-icon>
           <span class="dialog-title">确认订单</span>
         </div>
       </template>
-      
+
       <div class="order-summary">
         <div class="summary-section">
           <div class="section-title">
@@ -208,7 +207,7 @@
           </div>
           <div class="section-content store-name">{{ currentStoreName }}</div>
         </div>
-        
+
         <div class="summary-section">
           <div class="section-title">
             <el-icon><ShoppingCart /></el-icon>
@@ -224,7 +223,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="summary-section total-section">
           <div class="section-title">
             <el-icon><Wallet /></el-icon>
@@ -234,7 +233,7 @@
             <span class="order-total">¥{{ cartStore.totalPrice.toFixed(2) }}</span>
           </div>
         </div>
-        
+
         <div class="summary-section">
           <div class="section-title">
             <el-icon><Edit /></el-icon>
@@ -250,11 +249,11 @@
           </div>
         </div>
       </div>
-      
+
       <template #footer>
         <div class="dialog-footer">
-          <el-button round @click="checkoutDialogVisible = false">取消</el-button>
-          <el-button type="primary" round :loading="submitting" @click="submitOrder">
+          <el-button @click="checkoutDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="submitOrder">
             提交订单
           </el-button>
         </div>
@@ -266,7 +265,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Delete, Shop, ShoppingCart, Wallet, Edit } from '@element-plus/icons-vue'
+import { ArrowLeft, Delete, Shop, ShoppingCart, Wallet, Edit, Goods } from '@element-plus/icons-vue'
+import { Document } from '@element-plus/icons-vue'
 import { useCartStore } from '@/stores'
 import { getStoreById } from '@/api/store'
 import { createOrder } from '@/api/order'
@@ -295,7 +295,7 @@ const goToStores = () => {
 }
 
 const updateQuantity = (item, val) => {
-  cartStore.updateItemQuantity(item.skuId, val)
+  cartStore.updateQuantity(item.skuId, val)
 }
 
 const removeItem = (item) => {
@@ -347,9 +347,9 @@ const submitOrder = async () => {
         quantity: item.quantity
       }))
     }
-    
+
     const res = await createOrder(orderData)
-    ElMessage.success('订单提交成功 🎉')
+    ElMessage.success('订单提交成功')
     checkoutDialogVisible.value = false
     cartStore.clearCart()
     router.push(`/orders/${res.data.id}`)
@@ -372,7 +372,9 @@ const fetchStoreName = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 从后端同步购物车数据
+  await cartStore.fetchCart()
   fetchStoreName()
 })
 </script>
@@ -399,66 +401,58 @@ onMounted(() => {
   gap: 16px;
 }
 
-.header-emoji {
-  font-size: 40px;
-}
-
 .header-text h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 4px;
 }
 
 .header-text p {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .continue-btn {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
   padding: 12px 24px;
 }
 
 .continue-btn:hover {
-  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  background: var(--color-primary-hover);
 }
 
 /* 购物车内容 */
 .cart-content {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 /* 门店信息栏 */
 .store-info-bar {
   padding: 16px 24px;
-  background: linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 142, 83, 0.08) 100%);
-  border-bottom: 1px solid #f0f0f0;
+  background: var(--color-primary-light);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .store-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #fff;
+  background: var(--color-surface);
   padding: 8px 16px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.store-icon {
-  font-size: 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .store-name {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 /* 桌面端表格 */
@@ -473,10 +467,10 @@ onMounted(() => {
 .table-header {
   display: flex;
   padding: 16px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   font-size: 14px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .table-body {
@@ -487,12 +481,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 20px 0;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background 0.3s ease;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
 }
 
 .cart-row:hover {
-  background: #fafafa;
+  background: var(--color-bg);
 }
 
 .cart-row:last-child {
@@ -521,7 +515,7 @@ onMounted(() => {
 .product-image {
   width: 80px;
   height: 80px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -531,11 +525,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-}
-
-.placeholder-emoji {
-  font-size: 32px;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
 }
 
 .product-info {
@@ -545,7 +536,7 @@ onMounted(() => {
 .product-name {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 
@@ -555,13 +546,13 @@ onMounted(() => {
 
 .price {
   font-size: 15px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .subtotal {
   font-size: 18px;
   font-weight: 700;
-  color: #FF6B6B;
+  color: var(--color-primary);
 }
 
 /* 移动端卡片 */
@@ -571,8 +562,8 @@ onMounted(() => {
 }
 
 .cart-item-card {
-  background: #fafafa;
-  border-radius: 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -586,7 +577,7 @@ onMounted(() => {
 .item-image {
   width: 80px;
   height: 80px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 
@@ -600,11 +591,11 @@ onMounted(() => {
 .item-name {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .item-price {
-  color: #FF6B6B;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -628,7 +619,7 @@ onMounted(() => {
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
 }
 
 .item-subtotal {
@@ -639,13 +630,13 @@ onMounted(() => {
 
 .item-subtotal .label {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .item-subtotal .value {
   font-size: 16px;
   font-weight: 700;
-  color: #FF6B6B;
+  color: var(--color-primary);
 }
 
 /* 结算栏 */
@@ -654,8 +645,8 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  background: #fafafa;
-  border-top: 1px solid #f0f0f0;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
 }
 
 .footer-right {
@@ -678,12 +669,12 @@ onMounted(() => {
 
 .summary-row .label {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .summary-row .value {
   font-size: 14px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .summary-row.total .label {
@@ -692,7 +683,7 @@ onMounted(() => {
 }
 
 .total-price {
-  color: #FF6B6B;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -709,7 +700,7 @@ onMounted(() => {
 }
 
 .checkout-btn {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
   padding: 14px 40px;
   font-size: 16px;
@@ -717,63 +708,63 @@ onMounted(() => {
 }
 
 .checkout-btn:hover {
-  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  background: var(--color-primary-hover);
 }
 
 /* 空购物车 */
 .empty-cart {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   padding: 80px 24px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
-.empty-emoji {
-  font-size: 80px;
-  display: block;
+.empty-icon {
+  color: var(--color-text-muted);
   margin-bottom: 24px;
 }
 
 .empty-content h3 {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
   margin: 0 0 8px;
 }
 
 .empty-content p {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-muted);
   margin: 0 0 24px;
 }
 
 .empty-content .el-button {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
   padding: 14px 40px;
+}
+
+.empty-content .el-button:hover {
+  background: var(--color-primary-hover);
 }
 
 /* 结算对话框 */
 .checkout-dialog :deep(.el-dialog__header) {
   padding: 20px 24px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .dialog-header {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.dialog-emoji {
-  font-size: 28px;
+  color: var(--color-text);
 }
 
 .dialog-title {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .order-summary {
@@ -782,7 +773,7 @@ onMounted(() => {
 
 .summary-section {
   padding: 16px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .summary-section:last-child {
@@ -795,7 +786,7 @@ onMounted(() => {
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-secondary);
   margin-bottom: 12px;
 }
 
@@ -806,7 +797,7 @@ onMounted(() => {
 .section-content.store-name {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 .order-items {
@@ -823,19 +814,19 @@ onMounted(() => {
 
 .order-item .item-name {
   flex: 1;
-  color: #333;
+  color: var(--color-text);
 }
 
 .order-item .item-qty {
   width: 50px;
   text-align: center;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .order-item .item-price {
   width: 80px;
   text-align: right;
-  color: #FF6B6B;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -847,7 +838,7 @@ onMounted(() => {
 .order-total {
   font-size: 24px;
   font-weight: 700;
-  color: #FF6B6B;
+  color: var(--color-primary);
 }
 
 .dialog-footer {
@@ -857,8 +848,12 @@ onMounted(() => {
 }
 
 .dialog-footer .el-button--primary {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
+}
+
+.dialog-footer .el-button--primary:hover {
+  background: var(--color-primary-hover);
 }
 
 /* 移动端优化 */
@@ -866,44 +861,40 @@ onMounted(() => {
   .cart-page {
     padding: 0 12px 120px;
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
     margin-bottom: 16px;
   }
-  
-  .header-emoji {
-    font-size: 32px;
-  }
-  
+
   .header-text h1 {
     font-size: 22px;
   }
-  
+
   .continue-btn {
     width: 100%;
   }
-  
+
   .cart-content {
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
   }
-  
+
   .store-info-bar {
     padding: 12px 16px;
   }
-  
+
   /* 隐藏桌面端表格 */
   .desktop-view {
     display: none;
   }
-  
+
   /* 显示移动端卡片 */
   .mobile-cards {
     display: block;
   }
-  
+
   /* 固定底部结算栏 */
   .cart-footer {
     position: fixed;
@@ -911,46 +902,42 @@ onMounted(() => {
     left: 0;
     right: 0;
     padding: 12px 16px;
-    background: #fff;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
     z-index: 99;
     flex-direction: row;
   }
-  
+
   .footer-left {
     display: none;
   }
-  
+
   .footer-right {
     width: 100%;
     gap: 16px;
   }
-  
+
   .summary-info {
     flex: 1;
   }
-  
+
   .summary-row {
     justify-content: flex-start;
   }
-  
+
   .total-price .amount {
     font-size: 22px;
   }
-  
+
   .checkout-btn {
     padding: 12px 24px;
     font-size: 14px;
   }
-  
+
   .empty-cart {
     padding: 60px 24px;
   }
-  
-  .empty-emoji {
-    font-size: 60px;
-  }
-  
+
   /* 对话框移动端适配 */
   .checkout-dialog :deep(.el-dialog) {
     width: 90% !important;

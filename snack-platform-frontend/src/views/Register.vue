@@ -2,9 +2,11 @@
   <div class="register-container">
     <div class="register-box">
       <div class="register-header">
-        <el-icon class="logo-icon"><Shop /></el-icon>
-        <h1>用户注册</h1>
-        <p>创建您的零食平台账号</p>
+        <div class="reg-brand">
+          <span class="reg-mark">S</span>
+        </div>
+        <h1>创建账号</h1>
+        <p>注册您的零食平台账号</p>
       </div>
 
       <el-form
@@ -15,62 +17,27 @@
         @submit.prevent="handleRegister"
       >
         <el-form-item prop="username">
-          <el-input
-            v-model="form.username"
-            placeholder="用户名"
-            :prefix-icon="User"
-            size="large"
-          />
+          <el-input v-model="form.username" placeholder="用户名" :prefix-icon="User" size="large" />
         </el-form-item>
 
         <el-form-item prop="password">
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            :prefix-icon="Lock"
-            size="large"
-            show-password
-          />
+          <el-input v-model="form.password" type="password" placeholder="密码" :prefix-icon="Lock" size="large" show-password />
         </el-form-item>
 
         <el-form-item prop="confirmPassword">
-          <el-input
-            v-model="form.confirmPassword"
-            type="password"
-            placeholder="确认密码"
-            :prefix-icon="Lock"
-            size="large"
-            show-password
-          />
+          <el-input v-model="form.confirmPassword" type="password" placeholder="确认密码" :prefix-icon="Lock" size="large" show-password />
         </el-form-item>
 
         <el-form-item prop="nickname">
-          <el-input
-            v-model="form.nickname"
-            placeholder="昵称（选填）"
-            :prefix-icon="UserFilled"
-            size="large"
-          />
+          <el-input v-model="form.nickname" placeholder="昵称（选填）" :prefix-icon="UserFilled" size="large" />
         </el-form-item>
 
         <el-form-item prop="phone">
-          <el-input
-            v-model="form.phone"
-            placeholder="手机号（选填）"
-            :prefix-icon="Phone"
-            size="large"
-          />
+          <el-input v-model="form.phone" placeholder="手机号（选填）" :prefix-icon="Phone" size="large" />
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            :loading="loading"
-            class="register-btn"
-            @click="handleRegister"
-          >
+          <el-button type="primary" size="large" :loading="loading" class="register-btn" @click="handleRegister">
             注册
           </el-button>
         </el-form-item>
@@ -87,12 +54,11 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { Shop, User, Lock, UserFilled, Phone } from '@element-plus/icons-vue'
+import { User, Lock, UserFilled, Phone } from '@element-plus/icons-vue'
 import { register } from '@/api/auth'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-
 const formRef = ref()
 const loading = ref(false)
 
@@ -155,48 +121,74 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-bg);
 }
 
 .register-box {
-  width: 400px;
+  width: 420px;
   padding: 40px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
 }
 
-.logo-icon {
-  font-size: 48px;
-  color: #409eff;
+.reg-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.reg-mark {
+  width: 44px;
+  height: 44px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
 }
 
 .register-header h1 {
-  margin: 10px 0 5px;
-  font-size: 24px;
-  color: #333;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
 }
 
 .register-header p {
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
-}
-
-.register-form {
-  margin-top: 20px;
 }
 
 .register-btn {
   width: 100%;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
 }
 
 .register-footer {
   text-align: center;
-  color: #999;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .register-box {
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 24px;
+    border: none;
+    border-radius: 0;
+  }
 }
 </style>

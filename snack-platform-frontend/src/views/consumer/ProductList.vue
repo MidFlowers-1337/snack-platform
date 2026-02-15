@@ -2,9 +2,11 @@
   <div class="product-list">
     <!-- 门店信息头部 -->
     <div class="store-header" v-if="currentStore">
-      <div class="store-banner" :style="{ background: getStoreGradient(currentStore.id) }">
+      <div class="store-banner">
         <div class="store-banner-content">
-          <div class="store-icon">🏪</div>
+          <div class="store-icon">
+            <el-icon :size="32" color="#fff"><Shop /></el-icon>
+          </div>
           <div class="store-details">
             <h2>{{ currentStore.name }}</h2>
             <div class="store-meta">
@@ -42,23 +44,21 @@
             <span>商品分类</span>
           </div>
           <div class="category-list">
-            <div 
-              class="category-item" 
+            <div
+              class="category-item"
               :class="{ active: currentCategory === 'all' }"
               @click="handleCategorySelect('all')"
             >
-              <span class="category-icon">📦</span>
               <span class="category-name">全部商品</span>
               <span class="category-count">{{ total }}</span>
             </div>
-            <div 
+            <div
               v-for="cat in categories"
               :key="cat.id"
               class="category-item"
               :class="{ active: currentCategory === String(cat.id) }"
               @click="handleCategorySelect(String(cat.id))"
             >
-              <span class="category-icon">{{ getCategoryIcon(cat.name) }}</span>
               <span class="category-name">{{ cat.name }}</span>
             </div>
           </div>
@@ -89,9 +89,9 @@
             </div>
             <div class="search-tags" v-if="!searchKeyword">
               <span class="tag-label">热门：</span>
-              <el-tag 
-                v-for="tag in hotTags" 
-                :key="tag" 
+              <el-tag
+                v-for="tag in hotTags"
+                :key="tag"
                 class="hot-tag"
                 @click="searchKeyword = tag; handleSearch()"
               >
@@ -110,7 +110,7 @@
                 >
                   <template #error>
                     <div class="image-placeholder">
-                      <span class="placeholder-emoji">🍿</span>
+                      <el-icon :size="40" color="var(--color-text-muted)"><Goods /></el-icon>
                     </div>
                   </template>
                 </el-image>
@@ -168,7 +168,7 @@
 
           <el-empty v-if="!loading && skuList.length === 0" description="暂无商品">
             <template #image>
-              <span style="font-size: 80px;">🔍</span>
+              <el-icon :size="80" color="var(--color-text-muted)"><Search /></el-icon>
             </template>
           </el-empty>
 
@@ -194,7 +194,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Location, ShoppingCart, Grid, Search, Picture } from '@element-plus/icons-vue'
+import { Location, ShoppingCart, Grid, Search, Goods, Shop } from '@element-plus/icons-vue'
 import { getStoreById } from '@/api/store'
 import { getCategories } from '@/api/product'
 import { getStoreSkus } from '@/api/sku'
@@ -219,39 +219,6 @@ const total = ref(0)
 
 // 热门搜索标签
 const hotTags = ['薯片', '巧克力', '坚果', '饼干', '糖果']
-
-// 门店渐变色
-const getStoreGradient = (id) => {
-  const gradients = [
-    'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
-    'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  ]
-  return gradients[(id || 0) % gradients.length]
-}
-
-// 分类图标
-const getCategoryIcon = (name) => {
-  const icons = {
-    '薯片': '🥔',
-    '饼干': '🍪',
-    '糖果': '🍬',
-    '巧克力': '🍫',
-    '坚果': '🥜',
-    '果干': '🍇',
-    '肉类': '🥓',
-    '饮料': '🥤',
-    '膨化': '🍿',
-    '蛋糕': '🍰',
-  }
-  for (const key in icons) {
-    if (name.includes(key)) return icons[key]
-  }
-  return '🍿'
-}
 
 const goToCart = () => {
   router.push('/cart')
@@ -289,7 +256,7 @@ const addToCart = (sku) => {
   if (!sku.quantity || sku.quantity <= 0) {
     sku.quantity = 1
   }
-  
+
   cartStore.addItem({
     skuId: sku.id,
     productId: sku.productId,
@@ -299,9 +266,9 @@ const addToCart = (sku) => {
     quantity: sku.quantity,
     stock: sku.stock
   })
-  
+
   ElMessage({
-    message: `已添加 ${sku.quantity} 件 ${sku.product?.name} 到购物车 🛒`,
+    message: `已添加 ${sku.quantity} 件 ${sku.product?.name} 到购物车`,
     type: 'success',
     duration: 2000
   })
@@ -334,15 +301,15 @@ const fetchSkus = async () => {
       page: currentPage.value,
       size: pageSize.value
     }
-    
+
     if (currentCategory.value !== 'all') {
       params.categoryId = currentCategory.value
     }
-    
+
     if (searchKeyword.value) {
       params.keyword = searchKeyword.value
     }
-    
+
     const res = await getStoreSkus(storeId.value, params)
     skuList.value = (res.data.records || res.data || []).map(sku => ({
       ...sku,
@@ -367,59 +334,60 @@ onMounted(() => {
 .product-list {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 10px;
+  padding: 0 var(--space-sm);
 }
 
 /* 门店头部 */
 .store-header {
-  background: #fff;
-  border-radius: 16px;
-  margin-bottom: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .store-banner {
-  padding: 24px;
+  padding: var(--space-lg);
   color: #fff;
+  background: var(--color-text);
 }
 
 .store-banner-content {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .store-icon {
-  font-size: 48px;
-  background: rgba(255, 255, 255, 0.2);
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
 }
 
 .store-details h2 {
-  margin: 0 0 8px;
-  font-size: 24px;
-  font-weight: 700;
+  margin: 0 0 var(--space-sm);
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .store-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
   font-size: 14px;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .store-address {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .store-status {
@@ -432,56 +400,57 @@ onMounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .store-status.open .status-dot {
-  background: #67C23A;
-  box-shadow: 0 0 8px rgba(103, 194, 58, 0.6);
+  background: var(--color-success);
+  box-shadow: 0 0 6px rgba(45, 106, 79, 0.5);
 }
 
 .store-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: #fff;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
 }
 
 .product-count {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .count-number {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  color: #FF6B6B;
+  color: var(--color-primary);
 }
 
 .count-label {
   font-size: 14px;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .cart-btn {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
-  padding: 12px 24px;
-  font-size: 15px;
+  padding: 10px var(--space-lg);
+  font-size: 14px;
 }
 
 .cart-btn:hover {
-  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  background: var(--color-primary-hover);
 }
 
 /* 分类侧边栏 */
 .category-sidebar {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 84px;
 }
@@ -489,76 +458,76 @@ onMounted(() => {
 .category-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
+  gap: var(--space-sm);
+  padding: var(--space-md) 20px;
   font-weight: 600;
-  font-size: 16px;
-  color: #333;
-  border-bottom: 1px solid #f0f0f0;
+  font-size: 15px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .category-list {
-  padding: 8px;
+  padding: var(--space-sm);
 }
 
 .category-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 12px;
+  gap: var(--space-sm);
+  padding: 10px var(--space-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 4px;
+  transition: all var(--transition-fast);
+  margin-bottom: 2px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
 }
 
 .category-item:hover {
-  background: rgba(255, 107, 107, 0.08);
+  background: var(--color-hover);
+  color: var(--color-text);
 }
 
 .category-item.active {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-  color: #fff;
-}
-
-.category-icon {
-  font-size: 20px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 500;
 }
 
 .category-name {
   flex: 1;
-  font-size: 14px;
 }
 
 .category-count {
   font-size: 12px;
-  color: #999;
-  background: #f5f5f5;
+  color: var(--color-text-muted);
+  background: var(--color-hover);
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
 }
 
 .category-item.active .category-count {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: rgba(217, 79, 4, 0.12);
+  color: var(--color-primary);
 }
 
 /* 商品内容区 */
 .product-content {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 搜索栏 */
 .search-bar {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 }
 
 .search-input-wrapper {
   display: flex;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .search-input-wrapper .el-input {
@@ -567,8 +536,8 @@ onMounted(() => {
 }
 
 .search-input-wrapper :deep(.el-input__wrapper) {
-  border-radius: 12px;
-  box-shadow: 0 0 0 1px #e4e7ed inset;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--color-border) inset;
 }
 
 .search-input-wrapper :deep(.el-input__wrapper:hover) {
@@ -576,70 +545,70 @@ onMounted(() => {
 }
 
 .search-input-wrapper :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #FF6B6B inset;
+  box-shadow: 0 0 0 1px var(--color-primary) inset;
 }
 
 .search-icon {
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .search-btn {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
-  border-radius: 12px;
-  padding: 0 28px;
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-lg);
 }
 
 .search-btn:hover {
-  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  background: var(--color-primary-hover);
 }
 
 .search-tags {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
 }
 
 .tag-label {
   font-size: 13px;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .hot-tag {
   cursor: pointer;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   border: none;
-  background: #f5f5f5;
-  color: #666;
-  transition: all 0.3s ease;
+  background: var(--color-hover);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
 }
 
 .hot-tag:hover {
-  background: rgba(255, 107, 107, 0.1);
-  color: #FF6B6B;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 
 /* 商品网格 */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: var(--space-md);
   min-height: 200px;
 }
 
 .product-card {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid #f0f0f0;
-  transition: all 0.3s ease;
+  border: 1px solid var(--color-border);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
   cursor: pointer;
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
 }
 
 .product-image {
@@ -660,55 +629,51 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
-}
-
-.placeholder-emoji {
-  font-size: 48px;
+  background: var(--color-bg);
 }
 
 .stock-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 4px 10px;
-  border-radius: 20px;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  padding: var(--space-xs) 10px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 500;
 }
 
 .stock-badge.sold-out {
-  background: rgba(245, 108, 108, 0.9);
+  background: var(--color-danger);
   color: #fff;
 }
 
 .stock-badge.low-stock {
-  background: rgba(230, 162, 60, 0.9);
+  background: var(--color-warning);
   color: #fff;
 }
 
 .discount-badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  top: var(--space-sm);
+  left: var(--space-sm);
+  background: var(--color-primary);
   color: #fff;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: var(--space-xs) 10px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 500;
 }
 
 .product-info {
-  padding: 16px;
+  padding: var(--space-md);
   cursor: pointer;
 }
 
 .product-name {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 6px;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -716,8 +681,8 @@ onMounted(() => {
 
 .product-desc {
   font-size: 12px;
-  color: #999;
-  margin-bottom: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -726,11 +691,11 @@ onMounted(() => {
 .product-price {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .current-price {
-  color: #FF6B6B;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -748,15 +713,15 @@ onMounted(() => {
 
 .original-price {
   font-size: 12px;
-  color: #c0c4cc;
+  color: var(--color-text-muted);
   text-decoration: line-through;
 }
 
 .product-action {
-  padding: 0 16px 16px;
+  padding: 0 var(--space-md) var(--space-md);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .quantity-control {
@@ -769,34 +734,34 @@ onMounted(() => {
 
 .quantity-control :deep(.el-input-number__decrease),
 .quantity-control :deep(.el-input-number__increase) {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .add-cart-btn {
   flex: 1;
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
   border: none;
   font-size: 13px;
 }
 
 .add-cart-btn:hover {
-  background: linear-gradient(135deg, #FF5252 0%, #FF7043 100%);
+  background: var(--color-primary-hover);
 }
 
 .add-cart-btn:disabled {
-  background: #e4e7ed;
-  color: #c0c4cc;
+  background: var(--color-border);
+  color: var(--color-text-muted);
 }
 
 /* 分页 */
 .pagination {
-  margin-top: 24px;
+  margin-top: var(--space-lg);
   display: flex;
   justify-content: center;
 }
 
 .pagination :deep(.el-pagination.is-background .el-pager li.is-active) {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  background: var(--color-primary);
 }
 
 /* 移动端优化 */
@@ -804,103 +769,102 @@ onMounted(() => {
   .product-list {
     padding: 0;
   }
-  
+
   .store-header {
     border-radius: 0;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-sm);
   }
-  
+
   .store-banner {
-    padding: 16px;
+    padding: var(--space-md);
   }
-  
+
   .store-icon {
-    font-size: 36px;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
   }
-  
+
   .store-details h2 {
     font-size: 18px;
   }
-  
+
   .store-meta {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: var(--space-xs);
     font-size: 12px;
   }
-  
+
   .store-actions {
-    padding: 12px 16px;
+    padding: var(--space-sm) var(--space-md);
   }
-  
+
   .count-number {
     font-size: 22px;
   }
-  
+
   .cart-btn {
-    padding: 10px 16px;
+    padding: 8px var(--space-md);
     font-size: 13px;
   }
-  
+
   .product-content {
     border-radius: 0;
-    padding: 16px;
+    padding: var(--space-md);
   }
-  
+
   .search-input-wrapper {
     flex-direction: column;
   }
-  
+
   .search-input-wrapper .el-input {
     max-width: 100%;
   }
-  
+
   .search-btn {
     width: 100%;
   }
-  
+
   .search-tags {
     flex-wrap: wrap;
   }
-  
+
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: var(--space-sm);
   }
-  
+
   .product-image {
     height: 140px;
   }
-  
+
   .product-info {
-    padding: 12px;
+    padding: var(--space-sm);
   }
-  
+
   .product-name {
     font-size: 13px;
   }
-  
+
   .product-desc {
     font-size: 11px;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-sm);
   }
-  
+
   .current-price .amount {
     font-size: 18px;
   }
-  
+
   .product-action {
     flex-direction: column;
-    padding: 0 12px 12px;
-    gap: 8px;
+    padding: 0 var(--space-sm) var(--space-sm);
+    gap: var(--space-sm);
   }
-  
+
   .quantity-control .el-input-number {
     width: 100%;
   }
-  
+
   .add-cart-btn {
     width: 100%;
   }
