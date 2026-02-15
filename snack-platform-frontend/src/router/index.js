@@ -32,6 +32,8 @@ const AdminProductList = () => import('@/views/admin/ProductList.vue')
 const AdminStoreList = () => import('@/views/admin/StoreList.vue')
 const AdminUserList = () => import('@/views/admin/UserList.vue')
 const AdminLogList = () => import('@/views/admin/LogList.vue')
+const AdminDataScreen = () => import('@/views/admin/DataScreen.vue')
+const AdminPromotionList = () => import('@/views/admin/PromotionList.vue')
 
 const routes = [
   // 公共路由
@@ -186,6 +188,18 @@ const routes = [
         name: 'AdminLogList',
         component: AdminLogList,
         meta: { title: '操作日志' }
+      },
+      {
+        path: 'promotions',
+        name: 'AdminPromotionList',
+        component: AdminPromotionList,
+        meta: { title: '促销管理' }
+      },
+      {
+        path: 'data-screen',
+        name: 'AdminDataScreen',
+        component: AdminDataScreen,
+        meta: { title: '数据大屏' }
       }
     ]
   },

@@ -42,3 +42,23 @@ export function getAdminSalesReport(params) {
 export function getSalesReport(params) {
   return getAdminSalesReport(params)
 }
+
+// ==================== 数据大屏 API ====================
+
+// 获取实时统计数据（数据大屏用）
+export function getRealtimeStats() {
+  return request({
+    url: '/admin/stats/realtime',
+    method: 'get'
+  })
+}
+
+// 导出销售报表 Excel
+export function exportSalesReport(params) {
+  return request({
+    url: '/admin/report/export',
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
+}

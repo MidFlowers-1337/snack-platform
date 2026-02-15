@@ -52,6 +52,14 @@ export function cancelOrder(id) {
   })
 }
 
+// 获取订单状态统计（替代全量拉取计数）
+export function getOrderStats() {
+  return request({
+    url: '/orders/stats',
+    method: 'get'
+  })
+}
+
 // 核销订单（消费者输入自提码）
 export function verifyOrder(id, data) {
   return request({

@@ -94,3 +94,14 @@ export function deleteProduct(id) {
     method: 'delete'
   })
 }
+
+// ==================== 消费者端 API ====================
+
+// 获取热销商品推荐
+export function getHotProducts(limit = 10) {
+  return request({
+    url: '/products/recommendations/hot',
+    method: 'get',
+    params: { limit }
+  })
+}
