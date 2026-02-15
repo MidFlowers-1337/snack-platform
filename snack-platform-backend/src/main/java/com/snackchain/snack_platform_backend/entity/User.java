@@ -56,6 +56,11 @@ public class User {
      * 状态：0-禁用，1-启用
      */
     private Integer status;
+
+    /**
+     * 积分余额
+     */
+    private Integer points;
     
     /**
      * 创建时间

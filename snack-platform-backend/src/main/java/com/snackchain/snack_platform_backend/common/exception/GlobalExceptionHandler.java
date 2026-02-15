@@ -9,6 +9,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -87,7 +89,27 @@ public class GlobalExceptionHandler {
         log.warn("访问被拒绝: {}", e.getMessage());
         return Result.error(ResultCode.FORBIDDEN);
     }
-    
+
+    /**
+     * 请求方法不支持（如 POST 到 GET 端点）
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public Result<Void> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        log.warn("请求方法不支持: {}", e.getMessage());
+        return Result.error(ResultCode.BAD_REQUEST.getCode(), "请求方法不支持: " + e.getMethod());
+    }
+
+    /**
+     * 缺少必需的请求参数
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleMissingParam(MissingServletRequestParameterException e) {
+        log.warn("缺少请求参数: {}", e.getMessage());
+        return Result.error(ResultCode.BAD_REQUEST.getCode(), "缺少必需参数: " + e.getParameterName());
+    }
+
     /**
      * 其他异常
      */
