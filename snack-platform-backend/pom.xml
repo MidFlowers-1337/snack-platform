@@ -6,29 +6,19 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.8</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
+
 	<groupId>com.snackchain</groupId>
 	<artifactId>snack-platform-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>snack-platform-backend</name>
-	<description>零食店系统</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<description>零食平台后端服务</description>
+
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -76,6 +66,7 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -92,7 +83,12 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- JWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -111,29 +107,22 @@
 			<version>0.12.3</version>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<!-- MyBatis-Plus -->
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
 			<version>3.5.5</version>
 		</dependency>
-		
-		<!-- H2 for testing -->
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
-		</dependency>
 
-		<!-- SpringDoc OpenAPI 3 (Swagger UI) -->
+		<!-- SpringDoc OpenAPI 3 -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.3.0</version>
 		</dependency>
 
-		<!-- Redis + Spring Cache -->
+		<!-- Redis 与缓存 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
@@ -149,7 +138,7 @@
 			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 
-		<!-- EasyExcel 报表导出 -->
+		<!-- Excel 报表导出 -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>easyexcel</artifactId>
@@ -189,5 +178,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

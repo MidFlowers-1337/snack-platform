@@ -2,6 +2,7 @@ package com.snackchain.snack_platform_backend.module.order.service.impl;
 
 import com.snackchain.snack_platform_backend.common.exception.BusinessException;
 import com.snackchain.snack_platform_backend.common.result.ResultCode;
+import com.snackchain.snack_platform_backend.common.service.NotificationService;
 import com.snackchain.snack_platform_backend.entity.*;
 import com.snackchain.snack_platform_backend.enums.OrderStatus;
 import com.snackchain.snack_platform_backend.mapper.*;
@@ -57,6 +58,9 @@ class OrderServiceImplTest {
 
     @Mock
     private StoreSkuService storeSkuService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private OrderServiceImpl orderService;

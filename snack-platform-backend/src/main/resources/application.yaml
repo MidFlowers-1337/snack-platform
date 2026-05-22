@@ -1,22 +1,23 @@
 spring:
   application:
     name: snack-platform-backend
-  
-  # 数据源配置 - 生产环境必须设置环境变量
-  # 开发环境可使用 spring.profiles.active=dev 激活开发配置
+
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/snack_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
-  
-  # Jackson配置
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
     default-property-inclusion: non_null
 
-  # Redis 配置
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
@@ -29,7 +30,6 @@ spring:
           max-idle: 8
           min-idle: 0
 
-  # Spring Cache 配置
   cache:
     type: redis
     redis:
@@ -38,13 +38,11 @@ spring:
       use-key-prefix: true
       cache-null-values: false
 
-# MyBatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.snackchain.snack_platform_backend.entity
   configuration:
     map-underscore-to-camel-case: true
-    # 生产环境应移除或使用 SLF4J
     log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.slf4j.Slf4jImpl}
   global-config:
     db-config:
@@ -53,26 +51,19 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# JWT配置 - 生产环境必须设置 JWT_SECRET 环境变量
 jwt:
   secret: ${JWT_SECRET:dev-only-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm-dev}
-  expiration: ${JWT_EXPIRATION:86400000}  # 24小时，单位毫秒
+  expiration: ${JWT_EXPIRATION:86400000}
 
-# 服务器配置
 server:
   port: ${SERVER_PORT:8080}
   servlet:
     context-path: /api
-    multipart:
-      max-file-size: 5MB
-      max-request-size: 10MB
 
-# 文件上传配置
 file:
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
   base-url: ${FILE_BASE_URL:}
 
-# SpringDoc OpenAPI 配置
 springdoc:
   api-docs:
     path: /api-docs
@@ -83,17 +74,14 @@ springdoc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
 
-# 日志配置 - 生产环境使用 info 级别
 logging:
   level:
     com.snackchain: ${LOG_LEVEL:info}
     org.springframework.security: ${SECURITY_LOG_LEVEL:warn}
 
-# CORS配置 - 生产环境应限制为实际域名
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
 
-# Actuator 配置 - 限制端点暴露
 management:
   endpoints:
     web:
@@ -105,12 +93,10 @@ management:
       show-details: when_authorized
     info:
       enabled: true
-  # 禁用敏感端点
   server:
-    port: ${MANAGEMENT_PORT:8081}  # 使用独立端口，生产环境可设置为内网端口
+    port: ${MANAGEMENT_PORT:8081}
 
 ---
-# 开发环境配置
 spring:
   config:
     activate:
@@ -123,6 +109,5 @@ spring:
 jwt:
   secret: dev-only-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm-dev
 
-# 开发环境允许显示测试账号
 app:
   show-test-accounts: true
