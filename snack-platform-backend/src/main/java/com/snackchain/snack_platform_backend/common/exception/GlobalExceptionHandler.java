@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
 
@@ -108,6 +109,18 @@ public class GlobalExceptionHandler {
     public Result<Void> handleMissingParam(MissingServletRequestParameterException e) {
         log.warn("缺少请求参数: {}", e.getMessage());
         return Result.error(ResultCode.BAD_REQUEST.getCode(), "缺少必需参数: " + e.getParameterName());
+    }
+
+    /**
+     * 请求参数类型不匹配
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result<Void> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        String parameterName = e.getName();
+        String requiredType = e.getRequiredType() != null ? e.getRequiredType().getSimpleName() : "unknown";
+        log.warn("参数类型不匹配: name={}, value={}, requiredType={}", parameterName, e.getValue(), requiredType);
+        return Result.error(ResultCode.BAD_REQUEST.getCode(), "参数类型错误: " + parameterName);
     }
 
     /**

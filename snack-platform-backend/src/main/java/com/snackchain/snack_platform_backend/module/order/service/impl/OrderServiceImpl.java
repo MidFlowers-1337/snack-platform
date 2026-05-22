@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -225,13 +226,23 @@ public class OrderServiceImpl implements OrderService {
     }
     
     @Override
-    public IPage<Order> pageByStoreId(Long storeId, int pageNum, int pageSize, Integer status) {
+    public IPage<Order> pageByStoreId(Long storeId, int pageNum, int pageSize, Integer status,
+                                      String orderNo, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         Page<Order> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Order::getStoreId, storeId);
         
         if (status != null) {
             wrapper.eq(Order::getStatus, status);
+        }
+        if (StringUtils.hasText(orderNo)) {
+            wrapper.like(Order::getOrderNo, orderNo.trim());
+        }
+        if (startDateTime != null) {
+            wrapper.ge(Order::getCreateTime, startDateTime);
+        }
+        if (endDateTime != null) {
+            wrapper.le(Order::getCreateTime, endDateTime);
         }
         wrapper.orderByDesc(Order::getCreateTime);
         

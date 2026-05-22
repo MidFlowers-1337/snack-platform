@@ -12,14 +12,14 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDateTime;
 
 /**
- * MyBatis-Plus配置
+ * MyBatis-Plus 配置。
  */
 @Configuration
 @MapperScan("com.snackchain.snack_platform_backend.mapper")
 public class MyBatisPlusConfig {
-    
+
     /**
-     * 分页插件
+     * 分页插件。
      */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
@@ -27,22 +27,40 @@ public class MyBatisPlusConfig {
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }
-    
+
     /**
-     * 自动填充处理器
+     * 自动填充处理器。
      */
     @Bean
     public MetaObjectHandler metaObjectHandler() {
         return new MetaObjectHandler() {
             @Override
             public void insertFill(MetaObject metaObject) {
-                this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-                this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+                LocalDateTime now = LocalDateTime.now();
+                fillIfAbsent(metaObject, "createTime", now);
+                fillIfAbsent(metaObject, "updateTime", now);
+                // 兼容部分实体使用 createdAt/updatedAt 命名。
+                fillIfAbsent(metaObject, "createdAt", now);
+                fillIfAbsent(metaObject, "updatedAt", now);
             }
-            
+
             @Override
             public void updateFill(MetaObject metaObject) {
-                this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+                LocalDateTime now = LocalDateTime.now();
+                fillIfPresent(metaObject, "updateTime", now);
+                fillIfPresent(metaObject, "updatedAt", now);
+            }
+
+            private void fillIfAbsent(MetaObject metaObject, String fieldName, LocalDateTime value) {
+                if (metaObject.hasSetter(fieldName) && getFieldValByName(fieldName, metaObject) == null) {
+                    setFieldValByName(fieldName, value, metaObject);
+                }
+            }
+
+            private void fillIfPresent(MetaObject metaObject, String fieldName, LocalDateTime value) {
+                if (metaObject.hasSetter(fieldName)) {
+                    setFieldValByName(fieldName, value, metaObject);
+                }
             }
         };
     }

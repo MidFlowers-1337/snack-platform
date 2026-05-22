@@ -214,6 +214,7 @@ class ProductServiceImplTest {
         newCategory.setName("饮料");
 
         when(productMapper.selectById(id)).thenReturn(testProduct);
+        when(categoryMapper.selectById(testProduct.getCategoryId())).thenReturn(testCategory);
         when(categoryMapper.selectById(newCategoryId)).thenReturn(newCategory);
         when(productMapper.updateById(any(Product.class))).thenReturn(1);
 
@@ -277,6 +278,7 @@ class ProductServiceImplTest {
         Long newCategoryId = 999L;
 
         when(productMapper.selectById(id)).thenReturn(testProduct);
+        when(categoryMapper.selectById(testProduct.getCategoryId())).thenReturn(testCategory);
         when(categoryMapper.selectById(newCategoryId)).thenReturn(null);
 
         // When & Then: 执行并验证异常

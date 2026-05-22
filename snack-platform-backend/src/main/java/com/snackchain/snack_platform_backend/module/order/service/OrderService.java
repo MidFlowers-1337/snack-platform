@@ -5,6 +5,8 @@ import com.snackchain.snack_platform_backend.entity.Order;
 import com.snackchain.snack_platform_backend.module.order.dto.CreateOrderDTO;
 import com.snackchain.snack_platform_backend.module.order.vo.OrderStatsVO;
 
+import java.time.LocalDateTime;
+
 /**
  * 订单服务接口
  */
@@ -43,7 +45,8 @@ public interface OrderService {
     /**
      * 获取门店订单列表
      */
-    IPage<Order> pageByStoreId(Long storeId, int pageNum, int pageSize, Integer status);
+    IPage<Order> pageByStoreId(Long storeId, int pageNum, int pageSize, Integer status,
+                               String orderNo, LocalDateTime startDateTime, LocalDateTime endDateTime);
     
     /**
      * 门店接单

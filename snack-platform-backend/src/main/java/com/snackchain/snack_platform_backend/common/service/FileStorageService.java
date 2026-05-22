@@ -79,20 +79,20 @@ public class FileStorageService {
 
         } catch (IOException e) {
             log.error("文件上传失败", e);
-            throw new BusinessException(ResultCode.ERROR, "文件上传失败");
+            throw new BusinessException(ResultCode.INTERNAL_ERROR, "文件上传失败");
         }
     }
 
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new BusinessException(ResultCode.ERROR, "请选择要上传的文件");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "请选择要上传的文件");
         }
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BusinessException(ResultCode.ERROR, "文件大小不能超过 5MB");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "文件大小不能超过 5MB");
         }
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            throw new BusinessException(ResultCode.ERROR, "只支持 JPG、PNG、GIF、WebP 格式的图片");
+            throw new BusinessException(ResultCode.BAD_REQUEST, "只支持 JPG、PNG、GIF、WebP 格式的图片");
         }
     }
 }

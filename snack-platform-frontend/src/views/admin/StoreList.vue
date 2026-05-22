@@ -137,11 +137,12 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import {
-  getStores,
+  getAdminStores,
   createStore,
   updateStore,
   deleteStore as deleteStoreApi
 } from '@/api/store'
+import { getUserList } from '@/api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const loading = ref(false)
@@ -291,11 +292,11 @@ const fetchStores = async () => {
   loading.value = true
   try {
     const params = {
-      page: currentPage.value,
-      size: pageSize.value,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
       ...searchForm
     }
-    const res = await getStores(params)
+    const res = await getAdminStores(params)
     stores.value = res.data.records || res.data || []
     total.value = res.data.total || stores.value.length
   } catch (error) {
@@ -305,13 +306,18 @@ const fetchStores = async () => {
   }
 }
 
-// 模拟获取门店管理员列表
 const fetchStoreAdmins = async () => {
-  // 实际项目中应该调用API获取
-  storeAdmins.value = [
-    { id: 2, username: 'store1' },
-    { id: 3, username: 'store2' }
-  ]
+  try {
+    const res = await getUserList({
+      pageNum: 1,
+      pageSize: 200,
+      role: 'STORE_ADMIN'
+    })
+    storeAdmins.value = res.data.records || res.data || []
+  } catch (error) {
+    console.error('获取门店管理员失败:', error)
+    storeAdmins.value = []
+  }
 }
 
 onMounted(() => {
