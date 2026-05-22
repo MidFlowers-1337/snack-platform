@@ -104,7 +104,7 @@
                   v-if="row.status === 'PAID'"
                   type="primary"
                   size="small"
-                  @click="confirmOrder(row)"
+                  @click="acceptOrder(row)"
                 >
                   确认
                 </el-button>
@@ -185,7 +185,7 @@ import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ShoppingCart, Money, Clock, Goods } from '@element-plus/icons-vue'
 import { getStoreDashboard } from '@/api/report'
-import { getStoreOrders, confirmOrder as confirmOrderApi, readyOrder as readyOrderApi } from '@/api/order'
+import { getStoreOrders, acceptOrder as acceptOrderApi, readyOrder as readyOrderApi } from '@/api/order'
 import { getMyStoreSkus, updateStoreSku } from '@/api/sku'
 import { ElMessage, ElNotification } from 'element-plus'
 import echarts from '@/utils/echarts'
@@ -248,10 +248,10 @@ const goToSkus = () => {
   router.push('/store/skus')
 }
 
-const confirmOrder = async (order) => {
+const acceptOrder = async (order) => {
   try {
-    await confirmOrderApi(order.id)
-    ElMessage.success('订单已确认')
+    await acceptOrderApi(order.id)
+    ElMessage.success('订单已接单')
     fetchPendingOrders()
     fetchDashboard()
   } catch (error) {
@@ -304,8 +304,15 @@ const fetchDashboard = async () => {
 
 const fetchPendingOrders = async () => {
   try {
-    const res = await getStoreOrders({ status: 'PAID,CONFIRMED', size: 5 })
-    pendingOrders.value = res.data.records || res.data || []
+    const [pendingAcceptRes, acceptedRes] = await Promise.all([
+      getStoreOrders({ status: 'PAID', pageNum: 1, pageSize: 5 }),
+      getStoreOrders({ status: 'CONFIRMED', pageNum: 1, pageSize: 5 })
+    ])
+    const pendingAcceptOrders = pendingAcceptRes.data.records || pendingAcceptRes.data || []
+    const acceptedOrders = acceptedRes.data.records || acceptedRes.data || []
+    pendingOrders.value = [...pendingAcceptOrders, ...acceptedOrders]
+      .sort((a, b) => new Date(b.createTime) - new Date(a.createTime))
+      .slice(0, 5)
   } catch (error) {
     console.error('获取待处理订单失败:', error)
   }
@@ -313,8 +320,11 @@ const fetchPendingOrders = async () => {
 
 const fetchLowStockSkus = async () => {
   try {
-    const res = await getMyStoreSkus({ lowStock: true, size: 5 })
-    lowStockSkus.value = res.data.records || res.data || []
+    const res = await getMyStoreSkus({ pageNum: 1, pageSize: 200 })
+    const allSkus = res.data.records || res.data || []
+    lowStockSkus.value = allSkus
+      .filter(sku => Number(sku.stock) <= 10)
+      .slice(0, 5)
   } catch (error) {
     console.error('获取库存预警失败:', error)
   }

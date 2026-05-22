@@ -12,9 +12,10 @@
           <div class="verify-input">
             <el-input
               v-model="pickupCode"
-              placeholder="请输入4位取货码"
+              placeholder="请输入6位取货码"
               size="large"
-              maxlength="4"
+              maxlength="6"
+              @input="handlePickupCodeInput"
               @keyup.enter="verifyOrder"
               class="code-input"
             >
@@ -27,14 +28,14 @@
               size="large"
               @click="verifyOrder"
               :loading="verifying"
-              :disabled="!pickupCode || pickupCode.length !== 4"
+              :disabled="!pickupCode || pickupCode.length !== 6"
             >
               核销
             </el-button>
           </div>
           <div class="verify-tip">
             <el-icon><InfoFilled /></el-icon>
-            <span>请输入顾客提供的4位取货码进行核销</span>
+            <span>请输入顾客提供的6位取货码进行核销</span>
           </div>
         </el-card>
       </el-col>
@@ -84,26 +85,9 @@
         </div>
       </template>
       
-      <div v-if="verifyResult.success && verifyResult.order">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="订单号">{{ verifyResult.order.orderNo }}</el-descriptions-item>
-          <el-descriptions-item label="取货码">{{ verifyResult.order.pickupCode }}</el-descriptions-item>
-          <el-descriptions-item label="订单金额">
-            <span class="price">¥{{ verifyResult.order.totalAmount?.toFixed(2) }}</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="核销时间">{{ formatTime(new Date()) }}</el-descriptions-item>
-        </el-descriptions>
-
-        <h4>商品列表</h4>
-        <el-table :data="verifyResult.order.items" style="width: 100%">
-          <el-table-column prop="productName" label="商品名称" />
-          <el-table-column prop="quantity" label="数量" width="100" align="center" />
-          <el-table-column label="小计" width="120" align="center">
-            <template #default="{ row }">
-              ¥{{ (row.price * row.quantity).toFixed(2) }}
-            </template>
-          </el-table-column>
-        </el-table>
+      <div v-if="verifyResult.success" class="success-message">
+        <div>{{ verifyResult.message }}</div>
+        <div class="success-time">{{ formatTime(new Date()) }}</div>
       </div>
 
       <div v-else class="error-message">
@@ -171,9 +155,13 @@ const selectOrder = (order) => {
   pickupCode.value = order.pickupCode
 }
 
+const handlePickupCodeInput = (value) => {
+  pickupCode.value = String(value || '').replace(/\D/g, '').slice(0, 6)
+}
+
 const verifyOrder = async () => {
-  if (!pickupCode.value || pickupCode.value.length !== 4) {
-    ElMessage.warning('请输入4位取货码')
+  if (!pickupCode.value || pickupCode.value.length !== 6) {
+    ElMessage.warning('请输入6位取货码')
     return
   }
 
@@ -181,14 +169,15 @@ const verifyOrder = async () => {
   verifyResult.value = null
 
   try {
-    const res = await verifyPickup(pickupCode.value)
+    await verifyPickup(pickupCode.value)
+    const verifiedCode = pickupCode.value
     verifyResult.value = {
       success: true,
-      order: res.data
+      message: `核销成功（取货码：${verifiedCode}）`
     }
     ElMessage.success('核销成功')
     pickupCode.value = ''
-    fetchOrders()
+    await fetchOrders()
   } catch (error) {
     verifyResult.value = {
       success: false,
@@ -204,15 +193,17 @@ const fetchOrders = async () => {
   loadingOrders.value = true
   try {
     // 获取待取货订单
-    const readyRes = await getStoreOrders({ status: 'READY', size: 100 })
+    const readyRes = await getStoreOrders({ status: 'READY', pageNum: 1, pageSize: 100 })
     readyOrders.value = readyRes.data.records || readyRes.data || []
 
     // 获取今日已完成订单
     const today = new Date().toISOString().split('T')[0]
-    const completedRes = await getStoreOrders({ 
-      status: 'COMPLETED', 
+    const completedRes = await getStoreOrders({
+      status: 'COMPLETED',
       startDate: today,
-      size: 100 
+      endDate: today,
+      pageNum: 1,
+      pageSize: 100
     })
     completedOrders.value = completedRes.data.records || completedRes.data || []
   } catch (error) {
@@ -367,6 +358,19 @@ onUnmounted(() => {
   text-align: center;
   color: #f56c6c;
   font-size: 16px;
+}
+
+.success-message {
+  padding: 20px;
+  text-align: center;
+  color: #67c23a;
+  font-size: 16px;
+}
+
+.success-time {
+  margin-top: 8px;
+  color: #909399;
+  font-size: 14px;
 }
 
 h4 {

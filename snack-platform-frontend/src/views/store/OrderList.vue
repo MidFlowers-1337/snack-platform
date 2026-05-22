@@ -123,7 +123,7 @@
               v-if="row.status === 'PAID'"
               type="success"
               size="small"
-              @click="confirmOrder(row)"
+              @click="acceptOrder(row)"
             >
               确认
             </el-button>
@@ -225,7 +225,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import {
   getStoreOrders,
-  confirmOrder as confirmOrderApi,
+  acceptOrder as acceptOrderApi,
   rejectOrder as rejectOrderApi,
   readyOrder as readyOrderApi
 } from '@/api/order'
@@ -307,7 +307,7 @@ const viewOrder = (order) => {
   detailDialogVisible.value = true
 }
 
-const confirmOrder = async (order) => {
+const acceptOrder = async (order) => {
   ElMessageBox.confirm(
     '确定要确认此订单吗？',
     '提示',
@@ -318,8 +318,8 @@ const confirmOrder = async (order) => {
     }
   ).then(async () => {
     try {
-      await confirmOrderApi(order.id)
-      ElMessage.success('订单已确认')
+      await acceptOrderApi(order.id)
+      ElMessage.success('订单已接单')
       fetchOrders()
     } catch (error) {
       ElMessage.error(error.response?.data?.message || '操作失败')
@@ -376,8 +376,8 @@ const fetchOrders = async () => {
   loading.value = true
   try {
     const params = {
-      page: currentPage.value,
-      size: pageSize.value,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
       orderNo: searchForm.orderNo,
       status: searchForm.status
     }
@@ -402,7 +402,7 @@ const fetchOrders = async () => {
 
 const updateStats = async () => {
   try {
-    const res = await getStoreOrders({ size: 1000 })
+    const res = await getStoreOrders({ pageNum: 1, pageSize: 1000 })
     const allOrders = res.data.records || res.data || []
     
     orderStats.all = allOrders.length
