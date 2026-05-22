@@ -6,6 +6,7 @@ import com.snackchain.snack_platform_backend.common.exception.BusinessException;
 import com.snackchain.snack_platform_backend.common.result.Result;
 import com.snackchain.snack_platform_backend.common.result.ResultCode;
 import com.snackchain.snack_platform_backend.entity.Order;
+import com.snackchain.snack_platform_backend.enums.OrderStatus;
 import com.snackchain.snack_platform_backend.module.order.dto.CreateOrderDTO;
 import com.snackchain.snack_platform_backend.module.order.service.OrderService;
 import com.snackchain.snack_platform_backend.module.order.vo.OrderStatsVO;
@@ -24,9 +25,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "订单管理-消费者")
 public class OrderController {
-    
+
     private final OrderService orderService;
-    
+
     /**
      * 创建订单
      */
@@ -38,7 +39,7 @@ public class OrderController {
         Order order = orderService.createOrder(userId, dto);
         return Result.success(order);
     }
-    
+
     /**
      * 获取我的订单列表
      */
@@ -47,12 +48,12 @@ public class OrderController {
     public Result<IPage<Order>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(required = false) String status) {
         Long userId = getCurrentUserId();
-        IPage<Order> page = orderService.pageByUserId(userId, pageNum, pageSize, status);
+        IPage<Order> page = orderService.pageByUserId(userId, pageNum, pageSize, parseStatus(status));
         return Result.success(page);
     }
-    
+
     /**
      * 获取订单详情
      */
@@ -78,15 +79,15 @@ public class OrderController {
     public Result<Order> getByOrderNo(@PathVariable String orderNo) {
         Long userId = getCurrentUserId();
         Order order = orderService.getByOrderNo(orderNo);
-        
+
         // 验证订单归属
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException(ResultCode.ORDER_NOT_FOUND);
         }
-        
+
         return Result.success(order);
     }
-    
+
     /**
      * 支付订单（模拟支付）
      */
@@ -98,7 +99,7 @@ public class OrderController {
         orderService.pay(id, userId);
         return Result.success();
     }
-    
+
     /**
      * 取消订单
      */
@@ -121,10 +122,31 @@ public class OrderController {
         OrderStatsVO stats = orderService.getOrderStats(userId);
         return Result.success(stats);
     }
-    
+
     /**
      * 获取当前用户ID
      */
+    private Integer parseStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+
+        String normalized = status.trim().toUpperCase();
+        if (normalized.matches("\\d+")) {
+            return Integer.parseInt(normalized);
+        }
+
+        return switch (normalized) {
+            case "PENDING", "PENDING_PAYMENT" -> OrderStatus.PENDING_PAYMENT.getCode();
+            case "PAID", "PENDING_ACCEPT" -> OrderStatus.PENDING_ACCEPT.getCode();
+            case "CONFIRMED", "ACCEPTED" -> OrderStatus.ACCEPTED.getCode();
+            case "READY", "READY_FOR_PICKUP" -> OrderStatus.READY_FOR_PICKUP.getCode();
+            case "COMPLETED" -> OrderStatus.COMPLETED.getCode();
+            case "CANCELLED", "REJECTED" -> OrderStatus.CANCELLED.getCode();
+            default -> throw new BusinessException(ResultCode.ORDER_STATUS_ERROR, "无效的订单状态: " + status);
+        };
+    }
+
     private Long getCurrentUserId() {
         Long userId = UserContextHolder.getUserId();
         if (userId == null) {

@@ -1,6 +1,8 @@
 package com.snackchain.snack_platform_backend.module.sku.controller;
 
+import com.snackchain.snack_platform_backend.common.exception.BusinessException;
 import com.snackchain.snack_platform_backend.common.result.Result;
+import com.snackchain.snack_platform_backend.common.result.ResultCode;
 import com.snackchain.snack_platform_backend.entity.StoreSku;
 import com.snackchain.snack_platform_backend.module.sku.service.StoreSkuService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,6 +54,9 @@ public class StoreSkuController {
     @GetMapping("/{skuId}")
     public Result<StoreSku> getById(@PathVariable Long storeId, @PathVariable Long skuId) {
         StoreSku sku = storeSkuService.getById(skuId);
+        if (!storeId.equals(sku.getStoreId())) {
+            throw new BusinessException(ResultCode.SKU_NOT_FOUND);
+        }
         return Result.success(sku);
     }
 }
